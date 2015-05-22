@@ -1,0 +1,60 @@
+
+<div layout="row" flex>
+
+    <md-sidenav layout="column" class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-sm')">
+        <md-toolbar class="md-whiteframe-glow-z2 md-default-theme">
+            <h1 class="md-toolbar-tools">
+                <a ng-href="#/" layout="row" flex="" class="docs-logo" href="#/">
+                    <div class="docs-logotype">21:26 - May 19, 2015</div>
+                </a>
+            </h1>
+        </md-toolbar>
+    </md-sidenav>
+
+    <div layout="column" flex id="content">
+        <md-toolbar layout="row">
+            <button ng-click="toggleSidenav('left')" hide-gt-sm class="md-icon-button menuBtn">
+                <span class="md-visually-hidden">Menu</span>
+            </button>
+            <h1 class="md-toolbar-tools" layout-align-gt-sm="center">Home Control</h1>
+        </md-toolbar>
+        <md-content layout="column" flex class="md-padding">
+
+            <md-input-container flex>
+                <label>First name</label>
+                <input ng-model="user.firstName">
+            </md-input-container>
+
+            <md-input-container md-no-float>
+                <ng-md-icon icon="phone"></ng-md-icon>
+                <input ng-model="user.phone" type="text" placeholder="Phone Number">
+            </md-input-container>
+
+            <ng-md-icon style="fill: red" icon="warning"></ng-md-icon>
+
+            <md-button class="md-primary">Click me</md-button>
+            <md-button class="md-warn">Click me</md-button>
+            <md-button class="md-primary md-hue-2">Click me</md-button>
+
+            <div ng-controller="PartiesListCtrl">
+                <md-button ng-click="openBottomSheet()">
+                    Open a Bottom Sheet!
+                </md-button>
+            </div>
+
+            <md-card style="width: 175px;" ng-controller="SwitchController">
+                <img ng-click="toggle()" ng-src="/img/{{ getImage() }}" class="md-card-image" alt="Washed Out">
+                <md-card-content  class="md-actions">
+                    <h2 class="md-title">{{switch.label}}</h2>
+                    <md-switch ng-model="switch.state" aria-label="{{switch.name}}"></md-switch>
+                </md-card-content>
+            </md-card>
+
+        </md-content>
+    </div>
+</div>
+
+<!-- Angular Material Dependencies -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-aria.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.9.0/angular-material.min.js"></script>
