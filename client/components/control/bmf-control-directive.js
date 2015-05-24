@@ -7,7 +7,8 @@ module.directive('bmfControl', function() {
         name: '='
       },
 
-      templateUrl: 'bmf-control-template.ng.html',
+      // MUST GIVE FULL DIRECTORY PATH FOR THIS TO WORK!!
+      templateUrl: 'client/components/control/bmf-control-template.ng.html',
       controller: 'BmfControlController'
     };
 });
