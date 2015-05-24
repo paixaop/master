@@ -131,6 +131,8 @@ Meteor.startup(function () {
     for (var i = 0; i < controls.length; i++)
       Controls.insert(controls[i]);
   }
+
+
 });
 
 Meteor.methods({
@@ -142,6 +144,26 @@ Meteor.methods({
     unsubscribeTopic(topic)
   }
 });
+
+/**
+ * Iterate all controls in the database and subscribe to their
+ * MQTT topics.
+ */
+function subscbribeToAllControlChannels() {
+  var controls = Controls.find();
+
+  angular.forEach(controls, function(control, key) {
+    // If the control is enabled and the MQTT settings configured
+    // subscribe to the desired topic.
+    if( control.enable &&
+        control.mqtt &&
+        control.mqtt.in) {
+
+      subscribeTopic(control.mqtt.in);
+
+    }
+  })
+}
 
 function connectAndSetMqttBroker() {
 
@@ -181,21 +203,31 @@ function connectAndSetMqttBroker() {
   });
 }
 
-function subscribeTopic(topic) {
+function subscribeTopic(topic, next) {
+  next = next || function(error) { return error  };
   if(mqttClient) {
     mqttClient.subscribe(topic, function(error, granted) {
       if(error) {
-        throw error;
+        return next(error);
       }
       console.log("MQTT: Subscribed to " + granted.topic + " topic, with QoS " + granted.qos);
+      return next(false);
     });
+  }
+  else {
+    throw new Error('Not connected to any MQTT Broker and attempting subscriptions...')
   }
 }
 
-function unsubscribeTopic(topic) {
+function unsubscribeTopic(topic, next) {
+  next = next || function(error) { return error  };
   if(mqttClient) {
     mqttClient.unsubscribe(topic, function() {
-      console.log("MQTT: Subscribed to " + topic + " channel");
+      console.log("MQTT: unsbscribed from " + topic + " channel");
+      next();
     });
+  }
+  else {
+    throw new Error('Not connected to any MQTT Broker and attempting unsbscriptions...')
   }
 }

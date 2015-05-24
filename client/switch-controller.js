@@ -4,7 +4,7 @@
 
 //angular.module(NG_APP_NAME,['angular-meteor', 'ngMaterial', 'ngMdIcons']);
 
-angular.module(NG_APP_NAME).controller("SwitchCtrl", ['$scope', '$meteor',
+angular.module(NG_APP_NAME).controller("SwitchController", ['$scope', '$meteor',
   function($scope, $meteor){
 
     var doubleTapGuard = false;

@@ -2,9 +2,17 @@
  * Created by pedro on 5/18/15.
  */
 
-angular.module(NG_APP_NAME,['angular-meteor', 'ngMaterial', 'ngMdIcons', 'hmTouchEvents']);
+angular.module(NG_APP_NAME,
+  ['angular-meteor',
+   'ngMaterial',
+   'ngMdIcons',
+   'hmTouchEvents',
+   'controlElement']);
 
-angular.module(NG_APP_NAME).controller("PartiesListCtrl", ['$scope', '$meteor', '$mdSidenav', '$mdBottomSheet',
+/*
+angular.module(NG_APP_NAME).controller("PartiesListController",
+  ['$scope', '$meteor', '$mdSidenav', '$mdBottomSheet', 'controlElement',
+
   function($scope, $meteor, $mdSidenav, $mdBottomSheet){
 
     $scope.name = "World";
@@ -36,3 +44,4 @@ angular.module(NG_APP_NAME).controller("PartiesListCtrl", ['$scope', '$meteor', 
     };
 
   }]);
+*/

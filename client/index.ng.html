@@ -36,19 +36,7 @@
             <md-button class="md-warn">Click me</md-button>
             <md-button class="md-primary md-hue-2">Click me</md-button>
 
-            <div ng-controller="PartiesListCtrl">
-                <md-button ng-click="openBottomSheet()">
-                    Open a Bottom Sheet!
-                </md-button>
-            </div>
-
-            <md-card style="width: 175px;" ng-controller="SwitchController">
-                <img ng-click="toggle()" ng-src="/img/{{ getImage() }}" class="md-card-image" alt="Washed Out">
-                <md-card-content  class="md-actions">
-                    <h2 class="md-title">{{switch.label}}</h2>
-                    <md-switch ng-model="switch.state" aria-label="{{switch.name}}"></md-switch>
-                </md-card-content>
-            </md-card>
+            <control-element name="chandelier_switch"></control-element>
 
         </md-content>
     </div>
