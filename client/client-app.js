@@ -7,7 +7,7 @@ angular.module(NG_APP_NAME,
    'ngMaterial',
    'ngMdIcons',
    'hmTouchEvents',
-   'bmfControl']);
+   'masterControl']);
 
 /*
 angular.module(NG_APP_NAME).controller("PartiesListController",
