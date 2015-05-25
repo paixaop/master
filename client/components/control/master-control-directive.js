@@ -28,9 +28,11 @@ module.controller('masterControlController', ['$scope', '$meteor',
       throw new Error('Control name is undefined. Please define the "name" attribute in <master-control>');
     }
 
-    // Get the control from the database
-    $scope.boundControl = $meteor.object(Controls, { name: $scope.name } );
-    $scope.control = $scope.boundControl.getRawObject();
+    // Get the control from the database and bind it to Angular's scope
+    $scope.control = $meteor.object(Controls, { name: $scope.name } );
+
+    // Get the actual object without the angular wrapping
+    self.control = $scope.boundControl.getRawObject();
 
     if( angular.isUndefined($scope.control) ) {
       // Control was not found so throw up and error
@@ -45,21 +47,21 @@ module.controller('masterControlController', ['$scope', '$meteor',
 
       added: function(m) {
         if( m.topic ===$scope.control.mqtt.in) {
-          $scope.log('MQTT message received:', item);
+          self.log('MQTT message received:', item);
           $scope.message = m;
           $scope.processMessage(m.message);
         }
       }
     });
 
-    $scope.processMessage = function (msg) {
+    self.processMessage = function (msg) {
       // message format is
       // SET <variable>=<value>
       // GET <variable>
 
       var m = msg.match(/^(SET|GET)/);
       if(!m) {
-        $scope.log("Invalid MQTT message command. Ignoring. " + msg);
+        self.log("Invalid MQTT message command. Ignoring. " + msg);
         return;
       }
 
@@ -70,8 +72,8 @@ module.controller('masterControlController', ['$scope', '$meteor',
         var value    = m[3];
 
         if(variable === 'state') {
-          if( !$scope.checkValidState(value) ) {
-            $scope.log('Invalid value for state. Must be ' + Object.keys($scope.control.stateMap));
+          if( !self.checkValidState(value) ) {
+            self.log('Invalid value for state. Must be ' + Object.keys(self.control.stateMap));
             return;
           }
          $scope.control.state = value;
@@ -79,14 +81,14 @@ module.controller('masterControlController', ['$scope', '$meteor',
 
         if(variable === 'enable') {
           if( value !== 'false' && value !== 'true' ) {
-            $scope.log('Invalid value for enable. Must be true or false');
+            self.log('Invalid value for enable. Must be true or false');
             return;
           };
          $scope.control.enable = value;
         }
       }
       else {
-        $scope.log("Invalid MQTT message. Ignoring. " + msg);
+        self.log("Invalid MQTT message. Ignoring. " + msg);
       }
 
       m = msg.match(/^(GET)[\s\t]*(enable|state)$/);
@@ -95,76 +97,50 @@ module.controller('masterControlController', ['$scope', '$meteor',
         var variable = m[2];
 
         if(variable === 'state') {
-          $scope.log('state = ' +$scope.control.state);
+          self.log('state = ' + $scope.control.state);
         }
 
         if(variable === 'enable') {
-          $scope.log('enable = ' +$scope.control.enable);
+          self.log('enable = ' + $scope.control.enable);
         }
       }
       else {
-        $scope.log("Invalid MQTT message. Ignoring. " + msg);
+        self.log("Invalid MQTT message. Ignoring. " + msg);
       }
 
     };
 
-    $scope.checkValidState = function (state) {
-      var states = Object.keys($scope.control.stateMap);
+    self.checkValidState = function (state) {
+      var states = Object.keys(self.control.stateMap);
       return states.indexOf(state) !== -1;
     };
 
-    $scope.init = function() {
-      var states = Object.keys($scope.control.stateMap);
-      $scope.sounds= {};
+    self.init = function() {
+      var states = Object.keys(self.control.stateMap);
+      self.sounds= {};
 
       angular.forEach(states, function(state) {
-        $scope.log('init sate :' + state.toString());
-        var audio = $scope.getStateObj(state).audio;
+        self.log('init sate :' + state.toString());
+        var audio = self.getStateObj(state).audio;
         if(audio) {
           if( audio.file ) {
             var volume = 0.5 || audio.volume;
-            $scope.sounds[state] = new Howl({
+            self.sounds[state] = new Howl({
               src: [audio.file],
               volume: volume,
               onend: function() {
-                $scope.log('Audio ' + audio.file);
+                self.log('Audio ' + audio.file);
               }
             });
           } else {
-            $scope.log('Audio file not defined');
+            self.log('Audio file not defined');
           }
 
         }
       })
     };
 
-    $scope.press = function () {
-      $scope.log('press event');
-    };
-
-    $scope.doubletap = function () {
-      $scope.log('doubletap event fired');
-      doubleTapGuard = true;
-    };
-
-    $scope.press = function () {
-      $scope.log('press event fired');
-
-    };
-
-    $scope.tap = function () {
-      setTimeout(function() {
-        if(!doubleTapGuard) {
-          $scope.log('tap event fired');
-          $scope.click();
-        }
-        setTimeout(function() {
-          doubleTapGuard = false;
-        }, HAMMER_DOUBLE_TAP_DELAY);
-      }, HAMMER_SINGLE_TAP_DELAY);
-    };
-
-    $scope.replaceTags = function(str) {
+    self.replaceTags = function(str) {
       if( angular.isDefined($scope.control.name) ) {
         str = str.replace(/<NAME>/g,$scope.control.name);
       }
@@ -183,9 +159,36 @@ module.controller('masterControlController', ['$scope', '$meteor',
       return str;
     };
 
+
+    $scope.press = function () {
+      self.log('press event');
+    };
+
+    $scope.doubletap = function () {
+      self.log('doubletap event fired');
+      doubleTapGuard = true;
+    };
+
+    $scope.press = function () {
+      self.log('press event fired');
+
+    };
+
+    $scope.tap = function () {
+      setTimeout(function() {
+        if(!doubleTapGuard) {
+          self.log('tap event fired');
+          $scope.click();
+        }
+        setTimeout(function() {
+          doubleTapGuard = false;
+        }, HAMMER_DOUBLE_TAP_DELAY);
+      }, HAMMER_SINGLE_TAP_DELAY);
+    };
+    
     $scope.click = function(state) {
       state = state ||$scope.control.state;
-      var nextState = $scope.getStateObj(state).next_state;
+      var nextState = self.getStateObj(state).next_state;
 
       // Check is Next State is set
       if( angular.isUndefined(nextState) ) {
@@ -193,60 +196,60 @@ module.controller('masterControlController', ['$scope', '$meteor',
       }
 
       // Check if next state exists in the state map
-      if( angular.isUndefined($scope.control.stateMap[nextState]) ) {
+      if( angular.isUndefined(self.control.stateMap[nextState]) ) {
         throw new Error('next_state does not exist in state_map for state ' + $scope.control.state);
       }
 
       // We're good lets move to next_state
       $scope.control.state = nextState;
-      $scope.checkAndSetTimer();
+      self.checkAndSetTimer();
       $scope.playAudio();
       $scope.playTTS();
     };
 
-    $scope.checkAndSetTimer = function() {
+    self.checkAndSetTimer = function() {
       // Check for timers
-      var timer = $scope.getStateObj().timer;
+      var timer = self.getStateObj().timer;
 
       // If a timer is already on lets clear it first
-      if( $scope.timer ) {
-        clearTimeout($scope.timer);
+      if( self.timer ) {
+        clearTimeout(self.timer);
       }
 
       if( timer ) {
         if( timer.delay ) {
           if( typeof timer.next_state !== 'undefined') {
 
-            $scope.log('Set timer: ' + timer.delay + 's Next state:' + timer.next_state);
+            self.log('Set timer: ' + timer.delay + 's Next state:' + timer.next_state);
 
-            $scope.timer = setTimeout(function () {
+            self.timer = setTimeout(function () {
               $scope.click(timer.next_state);
-              $scope.log('Timer fired, setting state:' +$scope.control.state);
+              self.log('Timer fired, setting state:' + $scope.control.state);
               $scope.$apply();
             }, timer.delay);
 
           }
           else {
-            $scope.log('timer next_state not defined');
+            self.log('timer next_state not defined');
           }
         }
         else {
-          $scope.log('timer delay not defined');
+          self.log('timer delay not defined');
         }
       }
     };
 
-    $scope.actionAudio = function(action) {
-      var audio = $scope.sounds[$scope.control.state];
+    self.actionAudio = function() {
+      var audio = self.sounds[$scope.control.state];
 
       if( audio ) {
         audio.play();
       }
     };
 
-    $scope.actionTTS = function(action) {
+    self.actionTTS = function() {
 
-      var tts = $scope.getStateObj().tts;
+      var tts = self.getStateObj().tts;
 
       if( angular.isUndefined(tts) ) {
         return;
@@ -258,45 +261,38 @@ module.controller('masterControlController', ['$scope', '$meteor',
       window.speechSynthesis.speak(text);
     };
 
-    $scope.actionHttp = function (action) {
+    self.actionHttp = function () {
 
     };
 
-    $scope.actionMqtt = function (action) {
+    self.actionMqtt = function () {
 
     };
 
-    $scope.log = function(msg) {
+    self.log = function(msg) {
       console.log($scope.control.name + ':' + msg);
     };
 
-    $scope.getStateObj = function(state){
-      state = state ||$scope.control.state;
+    self.getStateObj = function(state){
+      state = state || $scope.control.state;
 
-      if( angular.isUndefined($scope.control.stateMap[state])) {
+      if( angular.isUndefined(self.control.stateMap[state])) {
         throw new Error($scope.name + ' bad control state:' + state);
       }
 
-      return $scope.control.stateMap[state];
+      return self.control.stateMap[state];
     };
 
     $scope.getLabel = function() {
       return $scope.control.label;
     };
 
-    $scope.getName = function() {
-      return $scope.control.name;
-    };
-
-    $scope.buttonAction = function() {
-      alert('Button clicked');
-    };
 
     $scope.getImage = function() {
-      return $scope.control.stateMap[$scope.control.state].image;
+      return self.control.stateMap[$scope.control.state].image;
     };
 
     // Initialize Controller
-    $scope.init();
+    self.init();
     
   }]);
