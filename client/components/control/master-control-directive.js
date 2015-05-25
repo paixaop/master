@@ -32,7 +32,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
     $scope.control = $meteor.object(Controls, { name: $scope.name } );
 
     // Get the actual object without the angular wrapping
-    self.control = $scope.boundControl.getRawObject();
+    self.control = $scope.control.getRawObject();
 
     if( angular.isUndefined($scope.control) ) {
       // Control was not found so throw up and error
@@ -203,8 +203,8 @@ module.controller('masterControlController', ['$scope', '$meteor',
       // We're good lets move to next_state
       $scope.control.state = nextState;
       self.checkAndSetTimer();
-      $scope.playAudio();
-      $scope.playTTS();
+      self.actionAudio();
+      self.actionTTS();
     };
 
     self.checkAndSetTimer = function() {
@@ -255,7 +255,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
         return;
       }
 
-      var msg = $scope.replaceTags(tts.msg);
+      var msg = self.replaceTags(tts.msg);
 
       var text = new SpeechSynthesisUtterance(msg);
       window.speechSynthesis.speak(text);
