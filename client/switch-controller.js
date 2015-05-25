@@ -9,7 +9,7 @@ angular.module(NG_APP_NAME).controller("SwitchController", ['$scope', '$meteor',
 
     var doubleTapGuard = false;
 
-    $scope.switch = $meteor.collection(Controls).find( { name: $scope.name } );
+    //$scope.switch = $meteor.collection(Controls).find( { name: $scope.name } );
 
     MqttMessages.find({}).observe({
 
