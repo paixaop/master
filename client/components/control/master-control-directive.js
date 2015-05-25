@@ -292,7 +292,9 @@ module.controller('masterControlController', ['$scope', '$meteor',
       return self.control.stateMap[$scope.control.state].image;
     };
 
-    // Initialize Controller
-    self.init();
-    
+    if( angular.isDefined(self.control) && self.control.name === $scope.name) {
+      // Object received from DB so we can initialize the controller
+      self.init();
+    }
+
   }]);
