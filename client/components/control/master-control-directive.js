@@ -1,10 +1,10 @@
 
-var module = angular.module('masterControl', []);
+var module = angular.module('masterControl', ['angular-meteor']);
 
 module.directive('masterControl', function() {
     return {
       scope: {
-        name: '='
+        name: '@'
       },
 
       // MUST GIVE FULL DIRECTORY PATH FOR THIS TO WORK!!
@@ -16,6 +16,14 @@ module.directive('masterControl', function() {
 module.controller('masterControlController', ['$scope', '$meteor',
   function($scope, $meteor) {
     var self = this;
-    //self.control = $meteor.collection(Controls).find( { "name": $scope.name } );
+
+    if( angular.isUndefined($scope.name) ) {
+      throw new Error('Control name is undefined. Please define the "name" attribute in <master-control>');
+    }
+
+    $scope.controls = $meteor.collection(Controls);
+
+    var control = $meteor.object(Controls, { name: $scope.name } );
+    $scope.control = control;
     $scope.label = "works";
   }]);
