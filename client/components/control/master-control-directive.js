@@ -1,5 +1,6 @@
 
 var module = angular.module('masterControl', ['angular-meteor']);
+Controls = new Meteor.Collection(CONTROLS_COLLECTION_NAME);
 
 /**
  * Custom element (tag) directive for control elements
@@ -22,46 +23,65 @@ module.directive('masterControl', function() {
 module.controller('masterControlController', ['$scope', '$meteor',
   function($scope, $meteor) {
     var self = this;
+    
+    self.subscription = {
+      ready: false
+    };
+    
+    // Guard for double tap events
+    self.doubleTapGuard = false;
 
     // If the master-control tag has no "name" attribute generate error
     if( angular.isUndefined($scope.name) ) {
       throw new Error('Control name is undefined. Please define the "name" attribute in <master-control>');
     }
 
-    // Get the control from the database and bind it to Angular's scope
-    $scope.control = $meteor.object(Controls, { name: $scope.name } );
+    $meteor.subscribe(CONTROLS_COLLECTION_NAME, { name: $scope.name }).then(function (handle) {
+        console.log('Client Controls subscription ready');
+        
+        self.subscription = handle;
+        
+        // Get the control from the database and bind it to Angular's scope
+        $scope.control = $meteor.object(Controls, { name: $scope.name } );
 
-    // Get the actual object without the angular wrapping
-    self.control = $scope.control.getRawObject();
-
-    if( angular.isUndefined($scope.control) ) {
-      // Control was not found so throw up and error
-      throw new Error('Control ' + $scope.name + ' was not found in database');
-    }
-
-    // Guard for double tap events
-    var doubleTapGuard = false;
+        // Get the actual object without the angular wrapping
+        self.thing = $scope.control.getRawObject();
+        
+        if (angular.isUndefined(self.thing.stateMap) ) {
+          throw new Error('Control statemap is not defined');
+        }  
+      
+        if( angular.isUndefined($scope.control) ) {
+          // Control was not found so throw up and error
+          throw new Error('Control ' + $scope.name + ' was not found in database');
+        }
+        
+        if( angular.isDefined(self.thing) && self.thing.name === $scope.name) {
+          // Object received from DB so we can initialize the controller
+          init();
+        }
+    });
 
     // Listen for MQTT messages
     MqttMessages.find({}).observe({
 
       added: function(m) {
         if( m.topic ===$scope.control.mqtt.in) {
-          self.log('MQTT message received:', item);
+          log('MQTT message received:', item);
           $scope.message = m;
           $scope.processMessage(m.message);
         }
       }
     });
 
-    self.processMessage = function (msg) {
+    function processMessage(msg) {
       // message format is
       // SET <variable>=<value>
       // GET <variable>
 
       var m = msg.match(/^(SET|GET)/);
       if(!m) {
-        self.log("Invalid MQTT message command. Ignoring. " + msg);
+        log("Invalid MQTT message command. Ignoring. " + msg);
         return;
       }
 
@@ -72,8 +92,8 @@ module.controller('masterControlController', ['$scope', '$meteor',
         var value    = m[3];
 
         if(variable === 'state') {
-          if( !self.checkValidState(value) ) {
-            self.log('Invalid value for state. Must be ' + Object.keys(self.control.stateMap));
+          if( !checkValidState(value) ) {
+            log('Invalid value for state. Must be ' + Object.keys(self.thing.stateMap));
             return;
           }
          $scope.control.state = value;
@@ -81,14 +101,14 @@ module.controller('masterControlController', ['$scope', '$meteor',
 
         if(variable === 'enable') {
           if( value !== 'false' && value !== 'true' ) {
-            self.log('Invalid value for enable. Must be true or false');
+            log('Invalid value for enable. Must be true or false');
             return;
           };
          $scope.control.enable = value;
         }
       }
       else {
-        self.log("Invalid MQTT message. Ignoring. " + msg);
+        log("Invalid MQTT message. Ignoring. " + msg);
       }
 
       m = msg.match(/^(GET)[\s\t]*(enable|state)$/);
@@ -97,50 +117,54 @@ module.controller('masterControlController', ['$scope', '$meteor',
         var variable = m[2];
 
         if(variable === 'state') {
-          self.log('state = ' + $scope.control.state);
+          log('state = ' + $scope.control.state);
         }
 
         if(variable === 'enable') {
-          self.log('enable = ' + $scope.control.enable);
+          log('enable = ' + $scope.control.enable);
         }
       }
       else {
-        self.log("Invalid MQTT message. Ignoring. " + msg);
+        log("Invalid MQTT message. Ignoring. " + msg);
       }
 
     };
 
-    self.checkValidState = function (state) {
-      var states = Object.keys(self.control.stateMap);
+    function checkValidState(state) {
+      var states = Object.keys(self.thing.stateMap);
       return states.indexOf(state) !== -1;
-    };
+    }
 
-    self.init = function() {
-      var states = Object.keys(self.control.stateMap);
-      self.sounds= {};
+    function init() {
+      if (angular.isUndefined(self.thing.stateMap) ) {
+       // throw new Error('Control statemap is not defined');
+      }
+      
+      var states = Object.keys(self.thing.stateMap);
+      sounds= {};
 
       angular.forEach(states, function(state) {
-        self.log('init sate :' + state.toString());
-        var audio = self.getStateObj(state).audio;
+        log('init sate :' + state.toString());
+        var audio = getStateObj(state).audio;
         if(audio) {
           if( audio.file ) {
             var volume = 0.5 || audio.volume;
-            self.sounds[state] = new Howl({
+            sounds[state] = new Howl({
               src: [audio.file],
               volume: volume,
               onend: function() {
-                self.log('Audio ' + audio.file);
+                log('Audio ' + audio.file);
               }
             });
           } else {
-            self.log('Audio file not defined');
+            log('Audio file not defined');
           }
 
         }
       })
-    };
+    }
 
-    self.replaceTags = function(str) {
+    function replaceTags(str) {
       if( angular.isDefined($scope.control.name) ) {
         str = str.replace(/<NAME>/g,$scope.control.name);
       }
@@ -157,38 +181,136 @@ module.controller('masterControlController', ['$scope', '$meteor',
         str = str.replace(/<STATE>/g, $scope.control.state);
       }
       return str;
+    }
+
+    function checkAndSetTimer() {
+      // Check for timers
+      var timer = getStateObj().timer;
+
+      // If a timer is already on lets clear it first
+      if( timer ) {
+        clearTimeout(timer);
+      }
+
+      if( timer ) {
+        if( timer.delay ) {
+          if( typeof timer.next_state !== 'undefined') {
+
+            log('Set timer: ' + timer.delay + 's Next state:' + timer.next_state);
+
+            timer = setTimeout(function () {
+              $scope.click(timer.next_state);
+              log('Timer fired, setting state:' + $scope.control.state);
+              $scope.$apply();
+            }, timer.delay);
+
+          }
+          else {
+            log('timer next_state not defined');
+          }
+        }
+        else {
+          log('timer delay not defined');
+        }
+      }
     };
 
+    function actionAudio() {
+      var audio = sounds[$scope.control.state];
 
-    $scope.press = function () {
-      self.log('press event');
+      if( audio ) {
+        audio.play();
+      }
+    };
+
+    function actionTTS() {
+      if (typeof SpeechSynthesisUtterance === 'undefined' ) {
+        log('TTS not supported by this browser');
+        return;
+      }
+      
+      var tts = getStateObj().tts;
+
+      if( angular.isUndefined(tts) ) {
+        return;
+      }
+
+      var msg = replaceTags(tts.msg);
+
+      var text = new SpeechSynthesisUtterance(msg);
+      window.speechSynthesis.speak(text);
+    };
+
+    function actionHttp() {
+        log('http action');
+    };
+
+    function actionMqtt() {
+        log('MQTT action');
+    };
+
+    function log(msg) {
+        if (!self.subscription.ready()) {
+            console.log('Subscription not ready yet. Log:' + msg);
+        }
+        else {
+            console.log($scope.control.name + ':' + msg);      
+        }
+    };
+
+    function getStateObj(state){
+      state = state || $scope.control.state;
+
+      if( angular.isUndefined(self.thing.stateMap[state])) {
+        throw new Error($scope.name + ' bad control state:' + state);
+      }
+
+      return self.thing.stateMap[state];
+    };    
+    
+    $scope.press = function() {
+      if (!self.subscription.ready()) {
+        return;
+      }
+      log('press event');
     };
 
     $scope.doubletap = function () {
-      self.log('doubletap event fired');
-      doubleTapGuard = true;
+      if (!self.subscription.ready()) {
+        return;
+      }
+      log('doubletap event fired');
+      self.doubleTapGuard = true;
     };
 
     $scope.press = function () {
-      self.log('press event fired');
-
+      if (!self.subscription.ready()) {
+        return;
+      }
+      log('press event fired');
     };
 
     $scope.tap = function () {
+      if (!self.subscription.ready()) {
+        return;
+      } 
       setTimeout(function() {
-        if(!doubleTapGuard) {
-          self.log('tap event fired');
+        if(!self.doubleTapGuard) {
+          log('tap event fired');
           $scope.click();
         }
         setTimeout(function() {
-          doubleTapGuard = false;
+          self.doubleTapGuard = false;
         }, HAMMER_DOUBLE_TAP_DELAY);
       }, HAMMER_SINGLE_TAP_DELAY);
     };
     
     $scope.click = function(state) {
+      if (!self.subscription.ready()) {
+        return;
+      }
       state = state ||$scope.control.state;
-      var nextState = self.getStateObj(state).next_state;
+      var nextState = getStateObj(state).next_state;
 
       // Check is Next State is set
       if( angular.isUndefined(nextState) ) {
@@ -196,105 +318,22 @@ module.controller('masterControlController', ['$scope', '$meteor',
       }
 
       // Check if next state exists in the state map
-      if( angular.isUndefined(self.control.stateMap[nextState]) ) {
+      if( angular.isUndefined(self.thing.stateMap[nextState]) ) {
         throw new Error('next_state does not exist in state_map for state ' + $scope.control.state);
       }
 
       // We're good lets move to next_state
       $scope.control.state = nextState;
-      self.checkAndSetTimer();
-      self.actionAudio();
-      self.actionTTS();
+      checkAndSetTimer();
+      actionAudio();
+      actionTTS();
     };
-
-    self.checkAndSetTimer = function() {
-      // Check for timers
-      var timer = self.getStateObj().timer;
-
-      // If a timer is already on lets clear it first
-      if( self.timer ) {
-        clearTimeout(self.timer);
-      }
-
-      if( timer ) {
-        if( timer.delay ) {
-          if( typeof timer.next_state !== 'undefined') {
-
-            self.log('Set timer: ' + timer.delay + 's Next state:' + timer.next_state);
-
-            self.timer = setTimeout(function () {
-              $scope.click(timer.next_state);
-              self.log('Timer fired, setting state:' + $scope.control.state);
-              $scope.$apply();
-            }, timer.delay);
-
-          }
-          else {
-            self.log('timer next_state not defined');
-          }
-        }
-        else {
-          self.log('timer delay not defined');
-        }
-      }
-    };
-
-    self.actionAudio = function() {
-      var audio = self.sounds[$scope.control.state];
-
-      if( audio ) {
-        audio.play();
-      }
-    };
-
-    self.actionTTS = function() {
-
-      var tts = self.getStateObj().tts;
-
-      if( angular.isUndefined(tts) ) {
-        return;
-      }
-
-      var msg = self.replaceTags(tts.msg);
-
-      var text = new SpeechSynthesisUtterance(msg);
-      window.speechSynthesis.speak(text);
-    };
-
-    self.actionHttp = function () {
-
-    };
-
-    self.actionMqtt = function () {
-
-    };
-
-    self.log = function(msg) {
-      console.log($scope.control.name + ':' + msg);
-    };
-
-    self.getStateObj = function(state){
-      state = state || $scope.control.state;
-
-      if( angular.isUndefined(self.control.stateMap[state])) {
-        throw new Error($scope.name + ' bad control state:' + state);
-      }
-
-      return self.control.stateMap[state];
-    };
-
-    $scope.getLabel = function() {
-      return $scope.control.label;
-    };
-
-
+    
     $scope.getImage = function() {
-      return self.control.stateMap[$scope.control.state].image;
+      if (!self.subscription.ready ) {
+        return '';
+      }
+      return self.thing.stateMap[$scope.control.state].image;
     };
-
-    if( angular.isDefined(self.control) && self.control.name === $scope.name) {
-      // Object received from DB so we can initialize the controller
-      self.init();
-    }
 
   }]);
