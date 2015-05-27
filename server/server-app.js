@@ -4,8 +4,30 @@
 
 var mqttClient;
 
+Controls = new Meteor.Collection(CONTROLS_COLLECTION_NAME);
+
+// Publish the Controls collection to the clients
+Meteor.publish(CONTROLS_COLLECTION_NAME, function (selector, options, publisher) {
+  console.log('Controls subscription requested by client');
+  return Controls.find(selector, options);
+});
+
+Controls.allow({
+  insert: function(){
+    return true;
+  },
+  update: function(){
+    return true;
+  },
+  remove: function(){
+    return true;
+  }
+});
+
 // Runs right after startup
 Meteor.startup(function () {
+  
+  console.log('Starting server');
 
   connectAndSetMqttBroker();
 
@@ -130,9 +152,9 @@ Meteor.startup(function () {
 
     for (var i = 0; i < controls.length; i++)
       Controls.insert(controls[i]);
+      
+    
   }
-
-
 });
 
 Meteor.methods({
