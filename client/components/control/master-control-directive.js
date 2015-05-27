@@ -36,7 +36,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
       throw new Error('Control name is undefined. Please define the "name" attribute in <master-control>');
     }
 
-    $meteor.subscribe(CONTROLS_COLLECTION_NAME, { name: $scope.name }).then(function (handle) {
+    $scope.$meteorSubscribe(CONTROLS_COLLECTION_NAME, { name: $scope.name }).then(function (handle) {
         console.log('Client Controls subscription ready');
         
         self.subscription = handle;
