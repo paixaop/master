@@ -4,21 +4,53 @@
         "app_name": "master",
     },
     
-    "mqtt": [
-        {
-            "id": "mybroker",
+    "mqtt": {
+        "mybroker": {
             "url": "mqtt://localhost:1883",
             "client_id": "masterControl",
-            "control_topic": "masterControl/mybroker",
+            "control_topic": "master/#",
             "collection": "mybroker_mqtt",
             "user": "user",
-            "pass": "pass"
+            "pass": "pass",
+            
+            // MQTT Regex pattern strings to match topics and extract paramters
+            // +name must always be present so the control, panel or screen can
+            // be queried from the database.
+            // It must also have a thing (control, screen, panel)
+            "patterns" : [
+                "master/+thing/+name/#path"
+            ]
         }
-    ],
+    },
     
     "controls": {
         "collection": "controls",
         "tap_delay": 500,
-        "doubletap_delay": 200
+        "doubletap_delay": 200,
+        "types": {
+            "switch": {
+                "commands": [
+                    "ON", "OFF"
+                ]
+            },
+            "dimmer": {
+                "commands": [
+                    "ON", "OFF", "INCREASE"
+                ]
+            },
+            "roller": {
+                "commands": [
+                    "UP", "DOWN", "STOP"
+                ]
+            },
+            "label": [
+                "string"
+            ]
+            
+        }
+    },
+    
+    "users" : {
+        auth: false
     }
 }
