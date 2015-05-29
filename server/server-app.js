@@ -50,12 +50,6 @@ Meteor.startup(function() {
 
         'template': 'templateDir',
 
-        'mqtt': {
-          'in': 'lights/kitchen/<NAME>',
-          'out': 'lights/ktichen/<NAME>',
-          'enable': true
-        },
-
         'stateMap': {
           true: {
             'label': 'on',
@@ -80,8 +74,9 @@ Meteor.startup(function() {
             },
 
             'actions': [{
+                'broker': 'mybroker',
                 'type': 'mqtt',
-                'topic': '<PATH>',
+                'topic': '<PATH>/<NAME>',
                 'message': 'ON',
                 'delay': 50
               }, {
@@ -119,7 +114,8 @@ Meteor.startup(function() {
 
             'actions': [{
                 'type': 'mqtt',
-                'topic': '<PATH>',
+                'broker': 'mybroker',
+                'topic': '<PATH>/<NAME>',
                 'message': 'OFF'
               }, {
                 'type': 'http',
