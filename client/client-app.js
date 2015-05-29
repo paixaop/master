@@ -2,7 +2,7 @@
  * Created by pedro on 5/18/15.
  */
 
-angular.module(NG_APP_NAME,
+angular.module(Meteor.settings.angular.app_name,
   ['angular-meteor',
    'ngMaterial',
    'ngMdIcons',
@@ -10,7 +10,7 @@ angular.module(NG_APP_NAME,
    'masterControl']);
 
 /*
-angular.module(NG_APP_NAME).controller("PartiesListController",
+angular.module(Meteor.settings.angular.app_name).controller("PartiesListController",
   ['$scope', '$meteor', '$mdSidenav', '$mdBottomSheet', 'controlElement',
 
   function($scope, $meteor, $mdSidenav, $mdBottomSheet){

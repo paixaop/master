@@ -2,9 +2,9 @@
  * Created by pedro on 5/20/15.
  */
 
-//angular.module(NG_APP_NAME,['angular-meteor', 'ngMaterial', 'ngMdIcons']);
+//angular.module(Meteor.settings.angular.app_name,['angular-meteor', 'ngMaterial', 'ngMdIcons']);
 
-angular.module(NG_APP_NAME).controller("SwitchController", ['$scope', '$meteor',
+angular.module(Meteor.settings.angular.app_name).controller("SwitchController", ['$scope', '$meteor',
   function($scope, $meteor){
 
     var doubleTapGuard = false;
