@@ -1,0 +1,24 @@
+{
+    
+    "angular": {
+        "app_name": "master",
+    },
+    
+    "mqtt": [
+        {
+            "id": "mybroker",
+            "url": "mqtt://localhost:1883",
+            "client_id": "masterControl",
+            "control_topic": "masterControl/mybroker",
+            "collection": "mybroker_mqtt",
+            "user": "user",
+            "pass": "pass"
+        }
+    ],
+    
+    "controls": {
+        "collection": "controls",
+        "tap_delay": 500,
+        "doubletap_delay": 200
+    }
+}
