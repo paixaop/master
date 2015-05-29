@@ -1,37 +1,111 @@
+// List of all connections to MQTT brokers, indexed by broker's name from the settings file
+var mqttBrokers = { };
+var mqttPatterns = { };
+
+/**
+ * Connect to all configured MQTT brokers
+ */
+function connectMqttAllBrokers() {
+  var keys = Object.keys(Meteor.settings.mqtt);
+  angular.forEach(keys, function(key) {
+    connectMqttBroker(key);
+  });
+}
+
 /**
  * Connect to the MQTT Broker and set up subscriptions
  */
-function connectMqttBroker() {
+function connectMqttBroker(brokerName) {
+    
+  var broker = '';
   
-  console.log('Attempt MQTT connection to broker ' + MQTT_BROKER_URL);
+  if( brokerName ) {
+    broker = Meteor.settings.mqtt[brokerName];
+  }
+  else {
+    brokerName = 'default';
+    broker = {
+        "url": "mqtt://localhost:1883",
+        "client_id": "masterControl",
+        "control_topic": "masterControl/mybroker",
+        "collection": "mybroker_mqtt"
+    };
+  } 
+  
+  if (angular.isUndefined(broker)) {
+    throw new Error('Unknown MQTT broker ' + brokerName);
+  }
+  
+  console.log('Attempt MQTT connection to broker ' + broker.url);
+  
+  var options = { };
+  
+  if (broker.client_id) {
+    option.clientId = broker.client_id;
+  }
+  
+  if (broker.user) {
+    options.user = broker.user;
+  }
+  
+  if (broker.pass) {
+    options.pass = broker.pass;
+  }
 
-  mqttClient = mqtt.connect(MQTT_BROKER_URL, {
-    clientId: MQTT_CLIENT_ID
+  mqttBroker[brokerName] = mqtt.connect(broker.url, {
+    clientId: broker.client_id
   });
+  
+  broker.control_topic = broker.control_topic || 'master/#';
+  
+  mqttBroker[brokerName].on("connect", function() {
 
-  mqttClient.on("connect", function() {
+    console.log("MQTT: " + brokerName + " Connected");
 
-    console.log("MQTT: Connected");
-
-    mqttClient.subscribe(MQTT_TOPIC);
-    console.log("MQTT: Subscribed to " + MQTT_TOPIC + " channel");
-
+    // Subscribe to the main control topic
+    subscribeTopic(broker.control_topic,function(error) {
+      if (error) {
+        throw new Error('MQTT: ' + brokerName + ' cannot subscribe to topic ' + broker.control_topic);        
+      }
+      console.log("MQTT: " + brokerName + " subscribed to topic " + broker.control_topic);    
+    });
+    
+    // Set message patterns
+    var patterns = broker.patterns || [ "master/+thing/+name/#path" ];
+    
+    // Create regular expression for extracting parameters from topics
+    angular.forEach(patterns, function(pattern) {
+      mqttPatterns[brokerName] = [ ];
+      mqttPatterns[brokerName].push(mqtt_regex(pattern).exec);
+    });
+    
     // Add MQTT messages to our mongoDB 'messages' collection as they arrive
-    Meteor.publish('messages', function() {
+    Meteor.publish(broker.collection, function() {
 
       var self = this;
 
       // Publish MQTT message to the database
-      mqttClient.on("message", function(topic, message) {
-        console.log("MQTT: Channel:", topic, "Receive Message:", message.toString());
+      mqttBroker[brokerName].on("message", function(topic, message) {
+        console.log("MQTT: " + brokerName + " Topic:", topic, "Receive Message:", message.toString());
         
         var ts = new Date();
         var msg = {
           message: message.toString(),
           topic: topic,
-          ts: ts.getTime()
+          ts: ts.getTime(),
+          broker: brokerName
         };
-        self.added(MQTT_MESSAGES_COLLECTION_NAME, ts.toString(), msg);
+        
+        var params = { };
+        for(i=0; i < mqttPatterns[brokerName].length; i++) {  
+          params = mqttPatterns[brokerName][i](topic);
+          if( params ) {
+            msg.params = params;
+            break;  
+          }
+        }
+        
+        self.added(broker.collection, ts.toString(), msg);
         
         // Process Message
         processMessage(msg);
@@ -42,51 +116,59 @@ function connectMqttBroker() {
       //ready = true;
     });
 
-    mqttClient.on("error", function(param) {
-      console.log("MQTT: Error:", param.toString());
+    mqttBroker[brokerName].on("error", function(param) {
+      console.log("MQTT: " + brokerName + " Error:" + param.toString());
+      var ts = new Date();
+      var msg = {
+        message: brokerName + " Error:" + param.toString(),
+        topic: broker.control_topic,
+        ts: ts.getTime(),
+        broker: brokerName
+      };
+      
+      self.added(broker.collection, ts.toString(), msg);
     });
+    
+    mqttBroker[brokerName].on("offline", function() {
+      console.log("MQTT: " + brokerName + " client offline");
+      var ts = new Date();
+      var msg = {
+        message: brokerName + " client offline",
+        topic: broker.control_topic,
+        ts: ts.getTime(),
+        broker: brokerName
+      };
+      
+      self.added(broker.collection, ts.toString(), msg);
+    });
+    
+    mqttBroker[brokerName].on("close", function() {
+      console.log("MQTT: " + brokerName + " client disconnected");
+      var ts = new Date();
+      var msg = {
+        message: brokerName + " client disconnected",
+        topic: broker.control_topic,
+        ts: ts.getTime(),
+        broker: brokerName
+      };
+      
+      self.added(broker.collection, ts.toString(), msg);
+    });
+    
+    mqttBroker[brokerName].on("reconnect", function() {
+      console.log("MQTT: " + brokerName + " client disconnected");
+      var ts = new Date();
+      var msg = {
+        message: brokerName + " client disconnected",
+        topic: broker.control_topic,
+        ts: ts.getTime(),
+        broker: brokerName
+      };
+      
+      self.added(broker.collection, ts.toString(), msg);
+    });
+    
   });
-}
-
-
-/**
- * Iterate all controls in the database and subscribe to their
- * MQTT topics.
- */
-function subscbribeToAllControlChannels() {
-  var controls = Controls.find();
-
-  angular.forEach(controls, function(control, key) {
-    // If the control is enabled and the MQTT settings configured
-    // subscribe to the desired topic.
-    if( control.enable &&
-        control.mqtt &&
-        control.mqtt. in ) {
-
-      subscribeTopic(control.mqtt.in );
-
-    }
-  })
-}
-
-/**
- * Iterate all controls in the database and unsubscribe to their
- * MQTT topics.
- */
-function unsubscbribeToAllControlChannels() {
-  var controls = Controls.find();
-
-  angular.forEach(controls, function(control, key) {
-    // If the control is enabled and the MQTT settings configured
-    // subscribe to the desired topic.
-    if( control.enable &&
-        control.mqtt &&
-        control.mqtt. in ) {
-
-      unsubscribeTopic(control.mqtt.in );
-
-    }
-  })
 }
 
 /**
@@ -130,5 +212,38 @@ function unsubscribeTopic(topic, next) {
  * process MQTT messages
  */
 function processIncommingMqttMessage(msg) {
-    
+  var brokerName = msg.broker;
+  var broker = Meteor.settings.mqtt[brokerName];
+  
+  if ( !msg.params.thing) {
+    console.log('MQTT Error: thing was not found in MQTT topic. Example: master/<thing>/<name>/');
+    return;
+  }
+  
+  if ( !msg.params.thing.match(/^control|screen|panel$/g) ) {
+    console.log('MQTT Error: thing must screen, panel or control');
+    return;
+  }
+  
+  if ( !msg.params.name) {
+    console.log('MQTT Error: name was not found in MQTT topic. Example: master/<name>/');
+    return;
+  }
+  
+  if( msg.params.thing.match(/control/) ) {
+    processControlMessage(control, msg);
+  }
+  
+  if( msg.params.thing.match(/control/) ) {
+    // TODO: screen MQTT message process
+  }
+  
+  if( msg.params.thing.match(/control/) ) {
+    // TODO: panel MQTT message process
+  }
+}
+
+function processControlMessage(msg) {
+  control = Controls.find( { name: msg.params.name });
+  
 }
