@@ -1,6 +1,6 @@
 
 var module = angular.module('masterControl', ['angular-meteor']);
-Controls = new Meteor.Collection(CONTROLS_COLLECTION_NAME);
+Controls = new Meteor.Collection(Meteor.settings.controls.collection);
 
 /**
  * Custom element (tag) directive for control elements
@@ -38,7 +38,8 @@ module.controller('masterControlController', ['$scope', '$meteor',
       throw new Error('Control name is undefined. Please define the "name" attribute in <master-control>');
     }
 
-    $scope.$meteorSubscribe(CONTROLS_COLLECTION_NAME, { name: $scope.name }).then(function (handle) {
+    $scope.$meteorSubscribe(Meteor.settings.controls.collection,
+                            { name: $scope.name }).then(function (handle) {
         console.log('Client Controls subscription ready');
         
         self.subscription = handle;
@@ -201,7 +202,13 @@ module.controller('masterControlController', ['$scope', '$meteor',
         if( timer.delay ) {
           if( typeof timer.next_state !== 'undefined') {
 
-            log('Timed State Change from ' + $scope.control.state + ' to ' + timer.next_state +' in ' + timer.delay + 'ms');
+            log('Timed State Change from ' +
+                $scope.control.state +
+                ' to ' +
+                timer.next_state +
+                ' in ' +
+                timer.delay +
+                'ms');
 
             self.stateTimer = setTimeout(function () {
               log('Timer fired, setting state to: ' + timer.next_state);
@@ -295,8 +302,8 @@ module.controller('masterControlController', ['$scope', '$meteor',
         }
         setTimeout(function() {
           self.doubleTapGuard = false;
-        }, HAMMER_DOUBLE_TAP_DELAY);
-      }, HAMMER_SINGLE_TAP_DELAY);
+        }, Meteor.settings.controls.doubletap_delay);
+      }, Meteor.settings.controls.tap_delay);
     };
     
     $scope.click = function(state) {
