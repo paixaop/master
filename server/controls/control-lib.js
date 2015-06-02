@@ -36,8 +36,16 @@ var Control = function() {
     
     self.loadControlConfigurations = function(next) {
         var config = { };
-        check(next, isFunction);
         
+        next = next || function(err) {
+            if( err ) {
+                throw err
+            }
+            console.log('Control: configurations read');
+        };
+        
+        check(next, isFunction);
+        debugger;
         // Read all files in the config directory
         fs.readdir(Meteor.settings.controls.config_path, function(err, files) {
             if ( err ) {
