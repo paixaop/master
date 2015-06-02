@@ -5,12 +5,13 @@
  */
 
 var Control = function() {
-    var self = this;
-    
+    var self = this;    
 
     /**
      * Get a control from the database
+     * @param {String} controlName  The name of the control
      */
+    
     self.getControlByName = function(controlName) {
         if (!controlName) {
             console.log('Error. You must pass a control name ');
@@ -28,6 +29,11 @@ var Control = function() {
         return c;
     };
     
+    
+    /**
+     * Load control configuration files
+     */
+    
     self.loadControlConfigurations = function(name, next) {
         var config = { };
         
@@ -36,7 +42,7 @@ var Control = function() {
             if ( err ) {
                 throw new Error('Control configuration directory not found: ' + err);
             }
-            angular.forEach(files, function(file) {
+            _.forEach(files, function(file) {
                 var m = file.match(/(^[0-9a-z_-]+).json$/i);
                 if( m ) {
                     self.config[m[1]] = JSON.parse(Assets.getText(Meteor.settings.controls.config_path + file));         
@@ -107,6 +113,8 @@ var Control = function() {
     
 };
 
+Meteor.Control = new Control();
+
 /*
 var Switch = function() {
     var self = this;
@@ -138,7 +146,5 @@ var Switch = function() {
     }
     
 }
-
-control.register('switch', Switch);
 
 */
