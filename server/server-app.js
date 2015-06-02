@@ -4,7 +4,7 @@
 
 var mqttClient;
 
-Controls = new Meteor.Collection(CONTROLS_COLLECTION_NAME);
+Controls = new Meteor.Collection(Meteor.settings.controls.collection);
 
 // Publish the Controls collection to the clients
 Meteor.publish(Meteor.settings.controls.collection, function(selector, options, publisher) {
@@ -29,7 +29,7 @@ Meteor.startup(function() {
 
   console.log('Starting server');
 
-  connectMqttBroker();
+  Meteor.MQTT.connectMqttAllBrokers();
 
   if (Controls.find().count() === 0) {
 
@@ -54,6 +54,7 @@ Meteor.startup(function() {
           true: {
             'label': 'on',
             'image': 'switch-on.png',
+            'css': '',
 
             'next_state': false,
 
@@ -98,7 +99,7 @@ Meteor.startup(function() {
           false: {
             'label': 'off',
             'image': 'switch-off.png',
-
+            'css': '',
             'next_state': true,
 
             'audio': {
