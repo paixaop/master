@@ -1,30 +1,33 @@
 {
     
     "angular": {
-        "app_name": "master",
+        "app_name": "master"
     },
     
     "mqtt": {
-        "mybroker": {
-            "url": "mqtt://localhost:1883",
-            "client_id": "masterControl",
-            "control_topic": "master/#",
-            "collection": "mybroker_mqtt",
-            "user": "user",
-            "pass": "pass",
-            
-            // MQTT Regex pattern strings to match topics and extract paramters
-            // +name must always be present so the control, panel or screen can
-            // be queried from the database.
-            // It must also have a thing (control, screen, panel)
-            "patterns" : [
-                "master/+thing/+name/#path"
-            ]
+        "collection": "mqtt_messages",
+        "security": {
+            "max_message_size" : 1000,
+            "max_topic_size": 1000
+        },
+        "brokers": {
+            "mybroker": {
+                "url": "mqtt://localhost:1883",
+                "client_id": "masterControl",
+                "topic": "master/#",
+                "topic_qos": 0,
+                "user": "user",
+                "pass": "pass",
+                "patterns" : [
+                    "master/+thing/+name/+ctrl/#path"
+                ]
+            }    
         }
     },
     
     "controls": {
         "collection": "controls",
+        "config_path": "/config/development/controls",
         "tap_delay": 500,
         "doubletap_delay": 200,
         "types": {
@@ -51,6 +54,6 @@
     },
     
     "users" : {
-        auth: false
+        "auth": false
     }
 }
