@@ -304,21 +304,36 @@ var MQTT = function() {
    
   };
   
-  self.observeChanges = function(brokerName) {
+  /**
+   * Send a MQTT message
+   * @param brokerName name of the broker to use. If null broadcast message to all knwon brokers
+   */
+  self.publish = function(brokerName, options) {
     
-    // Observe the Controls collection
-    // Any changes to Control documents will generate a MQTT message that reflects
-    // that change to the rest of the network
-    Controls.observeChanges({
-      added: function(id, doc) {
-        if( doc && doc.topic && doc.message && doc.broker ) {
-          var msg = typeof doc.message === 'object' ? JSON.stringify(doc.message) : doc.message + "";
-          
-          self.mqttBrokers[doc.broker].publish(doc.topic, msg);
-        }
+    check(options, {
+      topic: Match.String,
+      message: [Match.String, Match.Object]
+    });
+    
+    options.broadcast = options.broadcast || false;
+        
+    if( brokerName ) {
+      if( self.mqttBrokers[brokerName] ) {
+        // Unicast
+        self.mqttBrokers[brokerName].publish(topic, message);
       }
-	});
-  }
+      else {
+        self.log('unknown broker:' + brokerName);
+      }
+    }
+    else {
+      if (options.broadcast) {
+        _.forEach(self.mqttBrokers, function(client) {
+          client.publish(topic, message);
+        });
+      }      
+    }
+  };
   
   /**
    * Disconnect from MQTT Broker
