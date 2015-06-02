@@ -3,4 +3,4 @@
  */
 
 //Controls = new Meteor.Collection(CONTROLS_COLLECTION_NAME);
-MqttMessages = new Meteor.Collection(MQTT_MESSAGES_COLLECTION_NAME);
+//MqttMessages = new Meteor.Collection(Meteor.settings.mqtt.collection);
