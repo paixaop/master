@@ -1,0 +1,24 @@
+{
+    "type": "switch",
+    
+    "basic_commands": [
+        "ON", "OFF"
+    ],
+    
+    // By default properties are read only so you only need to specify the writable ones
+    "properties": {
+        "enable": {
+            "acl": "rw",
+            "type": "boolean"
+        },
+        "state": {
+            "acl": "rw",
+            "type": "string",
+        },
+        "locale": {
+            "acl": "rw",
+            "type": "string"
+        },
+        
+    }
+}
