@@ -12,6 +12,10 @@ Meteor.publish(Meteor.settings.controls.collection, function(selector, options, 
   return Controls.find(selector, options);
 });
 
+
+// Only used when data comes from the code. Server methods do not
+// go through allow/deny functions
+// TODO: Check Content-security-policy server header
 Controls.allow({
   insert: function() {
     return true;
