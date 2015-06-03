@@ -167,12 +167,12 @@ var MQTT = function() {
    * @return false is there are problems
    */
   self.isSecure = function(brokerName, msg) {
-    if (msg.topic.length > serverConfig.mqtt.security.max_topic_size) {
+    if (msg.topic.length > serverConfig.mqtt.security.max_topic_length) {
       self.log('WARNING: Possible hack attempt topic length greater than maximum allowed value. Ignoring message.');
       return false;
     }
     
-    if (msg.message.length > serverConfig.mqtt.security.max_message_size) {
+    if (msg.message.length > serverConfig.mqtt.security.max_message_length) {
       self.log('WARNING: Possible hack attempt message length greater than maximum allowed value. Ignoring message.');
       return false;
     }
