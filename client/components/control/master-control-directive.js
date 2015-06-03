@@ -1,6 +1,6 @@
 
 var module = angular.module('masterControl', ['angular-meteor']);
-Controls = new Meteor.Collection(Meteor.settings.controls.collection);
+Controls = new Meteor.Collection(clientConfig.controls.collection);
 
 /**
  * Custom element (tag) directive for control elements
@@ -38,7 +38,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
       throw new Error('Control name is undefined. Please define the "name" attribute in <master-control>');
     }
 
-    $scope.$meteorSubscribe(Meteor.settings.controls.collection,
+    $scope.$meteorSubscribe(clientConfig.controls.collection,
                             { name: $scope.name }).then(function (handle) {
         console.log('Client Controls subscription ready');
         
@@ -302,8 +302,8 @@ module.controller('masterControlController', ['$scope', '$meteor',
         }
         setTimeout(function() {
           self.doubleTapGuard = false;
-        }, Meteor.settings.controls.doubletap_delay);
-      }, Meteor.settings.controls.tap_delay);
+        }, clientConfig.controls.doubletap_delay);
+      }, clientConfig.controls.tap_delay);
     };
     
     $scope.click = function(state) {
