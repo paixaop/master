@@ -34,7 +34,6 @@ Meteor.startup(function() {
   console.log('Starting server');
 
   Meteor.MQTT.connectMqttAllBrokers();
-  
 
   if (Controls.find().count() === 0) {
 
