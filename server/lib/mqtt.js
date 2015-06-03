@@ -7,14 +7,14 @@ var MQTT = function() {
   self.mqttBrokers = { };
   self.mqttPatterns = { };
   
-  self.collectionName = Meteor.settings.mqtt.collection || 'mqtt_messages';  
+  self.collectionName = serverConfig.mqtt.collection || 'mqtt_messages';  
   self.collection = new Meteor.Collection(self.collectionName);
   
   /**
    * Connect to all configured MQTT brokers
    */
   self.connectMqttAllBrokers = function() {
-    _.forEach(Meteor.settings.mqtt.brokers, function(value, key, list) {
+    _.forEach(serverConfig.mqtt.brokers, function(value, key, list) {
       self.log('Attempt connection to broker:' + key);
       self.connectMqttBroker(key);
     });
@@ -24,7 +24,7 @@ var MQTT = function() {
    * Disconnect from all MQTT Brokers
    */
   self.disconnectMqttAllBrokers = function() {
-    _.forEach(Meteor.settings.mqtt.brokers, function(value, key, list) {
+    _.forEach(serverConfig.mqtt.brokers, function(value, key, list) {
       self.disconnect(key);
     });
   };
@@ -37,7 +37,7 @@ var MQTT = function() {
     var broker = '';
     
     if( brokerName ) {
-      broker = Meteor.settings.mqtt.brokers[brokerName];
+      broker = serverConfig.mqtt.brokers[brokerName];
     }
     else {
       brokerName = 'default';
@@ -167,12 +167,12 @@ var MQTT = function() {
    * @return false is there are problems
    */
   self.isSecure = function(brokerName, msg) {
-    if (msg.topic.length > Meteor.settings.mqtt.security.max_topic_size) {
+    if (msg.topic.length > serverConfig.mqtt.security.max_topic_size) {
       self.log('WARNING: Possible hack attempt topic length greater than maximum allowed value. Ignoring message.');
       return false;
     }
     
-    if (msg.message.length > Meteor.settings.mqtt.security.max_message_size) {
+    if (msg.message.length > serverConfig.mqtt.security.max_message_size) {
       self.log('WARNING: Possible hack attempt message length greater than maximum allowed value. Ignoring message.');
       return false;
     }
@@ -213,7 +213,7 @@ var MQTT = function() {
     if (self.mqttBrokers[brokerName]) {
       
       var options = { };
-      options.qos = Meteor.settings.mqtt.brokers[brokerName].topic_qos || 0;
+      options.qos = serverConfig.mqtt.brokers[brokerName].topic_qos || 0;
       
       self.mqttBrokers[brokerName].subscribe(topic, options, function(error, granted) {
         if (error) {
@@ -251,7 +251,7 @@ var MQTT = function() {
    */
   self.processIncommingMqttMessage = function(msg) {
     var brokerName = msg.broker;
-    var broker = Meteor.settings.mqtt.brokers[brokerName];
+    var broker = serverConfig.mqtt.brokers[brokerName];
     
     if ( !msg.params.thing) {
       self.log('Error: thing was not found in MQTT topic. Example: master/<thing>/<name>/');
@@ -299,7 +299,7 @@ var MQTT = function() {
       possibleCommands = ["ON", "OFF"];
     }
     else {
-      possibleCommands = Meteor.settings.controls.types[control.type];   
+      possibleCommands = serverConfig.controls.types[control.type];   
     }
    
   };
