@@ -31,37 +31,6 @@ var Control = function() {
     
     
     /**
-     * Load control configuration files
-     */
-    
-    self.loadControlConfigurations = function(next) {
-        var config = { };
-        
-        next = next || function(err) {
-            if( err ) {
-                throw err
-            }
-            console.log('Control: configurations read');
-        };
-        
-        check(next, isFunction);
-        debugger;
-        // Read all files in the config directory
-        fs.readdir(Meteor.settings.controls.config_path, function(err, files) {
-            if ( err ) {
-                throw new Error('Control configuration directory not found: ' + err);
-            }
-            _.forEach(files, function(file) {
-                var m = file.match(/(^[0-9a-z_-]+).json$/i);
-                if( m ) {
-                    self.config[m[1]] = JSON.parse(Assets.getText(Meteor.settings.controls.config_path + file));         
-                }
-            });
-            return next(err);
-        });
-    };
-    
-    /**
      * Is the property writable
      */
     self.isWritable = function(controlSettings, property) {
