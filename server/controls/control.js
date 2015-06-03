@@ -5,7 +5,8 @@
  */
 
 var Control = function() {
-    var self = this;    
+    var self = this;
+    
 
     /**
      * Get a control from the database
@@ -18,7 +19,24 @@ var Control = function() {
             return undefined;
         }
         
+        check(controlName, String);
+        if( controlName.length > serverConfig.controls.security.max_name_length ) {
+            console.log('Controls: WARNING control name too big. Ignoring');
+            return undefined;
+        }
+        
+        if( controlName.length > 1 ) {
+            console.log('Controls: WARNING control name too small. Ignoring');
+            return undefined;
+        }
+        
+        if( !controlName.match(/[^0-9a-z_-]/) ) {
+            console.log("Controls: bad characters in control name only 0-9, a-z, '_' and '_' allowed");
+            return undefined;
+        }
+        
         var c = Controls.find({ name: controlName } );
+        
         if (!c) {
             console.log('Control not found: ' + controlName);
         }
