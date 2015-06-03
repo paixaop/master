@@ -2,7 +2,7 @@
  * Created by pedro on 5/18/15.
  */
 
-angular.module(Meteor.settings.angular.app_name,
+angular.module(clientConfig.angular.app_name,
   ['angular-meteor',
    'ngMaterial',
    'ngMdIcons',
