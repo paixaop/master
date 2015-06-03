@@ -13,10 +13,10 @@ serverConfig.mqtt = {
     security: {
         
         // Limit the maximum size of a MQTT message. Bigger messages are ignored
-        max_message_size: 1000,
+        max_message_length: 1000,
         
         // Limit the maximum size of a MQTT topic. Messages sent on longer topics are ignored
-        max_topic_size: 1000
+        max_topic_length: 1000
     },
     
     // MQTT brokers
@@ -55,14 +55,11 @@ serverConfig.controls = {
     // MongoDB collection used to store controls
     collection: "controls",
     
-    // Single Tap idenfication (in ms)
-    // A single tap will be identified if control taps are separated by this interval
-    tap_delay: 500,
-    
-    // Double tap
-    // A doulbe tap will be identified if control taps are separated by this interval
-    // double_tap delay must be smaller than tap_delay
-    doubletap_delay: 200
+    security: {
+        
+        // Limit the maximum size of a MQTT message. Bigger messages are ignored
+        max_control_name_length: 200
+    }
 };
 
 // User serverConfigurations
