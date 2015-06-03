@@ -4,10 +4,10 @@
 
 var mqttClient;
 
-Controls = new Meteor.Collection(Meteor.settings.controls.collection);
+Controls = new Meteor.Collection(serverConfig.controls.collection);
 
 // Publish the Controls collection to the clients
-Meteor.publish(Meteor.settings.controls.collection, function(selector, options, publisher) {
+Meteor.publish(serverConfig.controls.collection, function(selector, options, publisher) {
   console.log('Controls subscription requested by client');
   return Controls.find(selector, options);
 });
@@ -34,7 +34,7 @@ Meteor.startup(function() {
   console.log('Starting server');
 
   Meteor.MQTT.connectMqttAllBrokers();
-  Meteor.Control.loadControlConfigurations();
+  
 
   if (Controls.find().count() === 0) {
 
