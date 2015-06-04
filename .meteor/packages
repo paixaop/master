@@ -11,3 +11,4 @@ angular:angular-material
 angular:angular-touch
 bojicas:howler2
 mkarliner:mqtt
+mkarliner:mqtt-regex

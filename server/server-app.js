@@ -2,43 +2,48 @@
  * Created by pedro on 5/18/15.
  */
 
-var mqttClient;
+var master = function () {
 
-Controls = new Meteor.Collection(CONTROLS_COLLECTION_NAME);
+}
+
+Controls = new Meteor.Collection(serverConfig.controls.collection);
 
 // Publish the Controls collection to the clients
-Meteor.publish(CONTROLS_COLLECTION_NAME, function (selector, options, publisher) {
+Meteor.publish(serverConfig.controls.collection, function(selector, options, publisher) {
   console.log('Controls subscription requested by client');
   return Controls.find(selector, options);
 });
 
+
+// Only used when data comes from the code. Server methods do not
+// go through allow/deny functions
+// TODO: Check Content-security-policy server header
 Controls.allow({
-  insert: function(){
+  insert: function() {
     return true;
   },
-  update: function(){
+  update: function() {
     return true;
   },
-  remove: function(){
+  remove: function() {
     return true;
   }
 });
 
 // Runs right after startup
-Meteor.startup(function () {
-  
+Meteor.startup(function() {
+
   console.log('Starting server');
 
-  connectAndSetMqttBroker();
+  Meteor.MQTT.connectMqttAllBrokers();
 
   if (Controls.find().count() === 0) {
 
-    var controls = [
-      {
-        'type' : 'switch',
+    var controls = [{
+        'type': 'switch',
 
         'name': 'chandelier_switch',
-        'path': 'lights/kitchen',
+        'path': '/thing/lights/kitchen',
 
         'locale': 'en-US',
 
@@ -51,16 +56,11 @@ Meteor.startup(function () {
 
         'template': 'templateDir',
 
-        'mqtt': {
-          'in': 'lights/kitchen/<NAME>',
-          'out': 'lights/ktichen/<NAME>',
-          'enable': true
-        },
-
         'stateMap': {
           true: {
             'label': 'on',
             'image': 'switch-on.png',
+            'css': '',
 
             'next_state': false,
 
@@ -80,24 +80,21 @@ Meteor.startup(function () {
               'msg': '<LABEL> turned on!'
             },
 
-            'actions': [
-              {
+            'actions': [{
+                'broker': 'mybroker',
                 'type': 'mqtt',
-                'topic': '<PATH>',
-                'msg': '<PATH>/<NAME>/<STATE>',
+                'topic': '<PATH>/<NAME>',
+                'message': 'ON',
                 'delay': 50
-              },
-              {
+              }, {
                 'type': 'http',
                 'url': 'http://server:port/<PATH>/<STATE>',
                 'method': 'GET'
-              },
-              {
+              }, {
                 'type': 'audio',
                 'url': 'flip.mp3',
                 'volume': 0.5
-              },
-              {
+              }, {
                 'type': 'tts',
                 'voice': 'alex',
                 'volume': 85,
@@ -108,7 +105,7 @@ Meteor.startup(function () {
           false: {
             'label': 'off',
             'image': 'switch-off.png',
-
+            'css': '',
             'next_state': true,
 
             'audio': {
@@ -122,23 +119,20 @@ Meteor.startup(function () {
               'msg': '<LABEL> turned off!'
             },
 
-            'actions': [
-              {
+            'actions': [{
                 'type': 'mqtt',
-                'topic': '<PATH>',
-                'msg': '<PATH>/<NAME>/<STATE>'
-              },
-              {
+                'broker': 'mybroker',
+                'topic': '<PATH>/<NAME>',
+                'message': 'OFF'
+              }, {
                 'type': 'http',
                 'url': 'http://server:port/<PATH>/<STATE>',
                 'method': 'GET'
-              },
-              {
+              }, {
                 'type': 'audio',
                 'url': 'flip.mp3',
                 'volume': 0.9
-              },
-              {
+              }, {
                 'type': 'tts',
                 'voice': 'alex',
                 'volume': 85,
@@ -152,8 +146,8 @@ Meteor.startup(function () {
 
     for (var i = 0; i < controls.length; i++)
       Controls.insert(controls[i]);
-      
-    
+
+
   }
 });
 
@@ -166,90 +160,3 @@ Meteor.methods({
     unsubscribeTopic(topic)
   }
 });
-
-/**
- * Iterate all controls in the database and subscribe to their
- * MQTT topics.
- */
-function subscbribeToAllControlChannels() {
-  var controls = Controls.find();
-
-  angular.forEach(controls, function(control, key) {
-    // If the control is enabled and the MQTT settings configured
-    // subscribe to the desired topic.
-    if( control.enable &&
-        control.mqtt &&
-        control.mqtt.in) {
-
-      subscribeTopic(control.mqtt.in);
-
-    }
-  })
-}
-
-function connectAndSetMqttBroker() {
-
-  mqttClient = mqtt.connect(MQTT_BROKER_URL, {
-    clientId: MQTT_CLIENT_ID
-  });
-
-  mqttClient.on("connect", function() {
-
-    console.log("MQTT: Connected");
-
-    mqttClient.subscribe(MQTT_TOPIC);
-    console.log("MQTT: Subscribed to " + MQTT_TOPIC + " channel");
-
-    // Add MQTT messages to our mongoDB 'messages' collection as they arrive
-    Meteor.publish('messages', function() {
-
-      var self = this;
-
-      mqttClient.on("message", function(topic, message) {
-        console.log("MQTT: Channel:", topic, "Receive Message:", message.toString());
-        var msg = {
-          message: message.toString(),
-          topic: topic,
-          ts: new Date()
-        };
-        self.added(MQTT_MESSAGES_COLLECTION_NAME, new Date().toString(), msg);
-      });
-
-      self.ready();
-      ready = true;
-    });
-
-    mqttClient.on("error", function(param) {
-      console.log("MQTT: Error:",param.toString());
-    });
-  });
-}
-
-function subscribeTopic(topic, next) {
-  next = next || function(error) { return error  };
-  if(mqttClient) {
-    mqttClient.subscribe(topic, function(error, granted) {
-      if(error) {
-        return next(error);
-      }
-      console.log("MQTT: Subscribed to " + granted.topic + " topic, with QoS " + granted.qos);
-      return next(false);
-    });
-  }
-  else {
-    throw new Error('Not connected to any MQTT Broker and attempting subscriptions...')
-  }
-}
-
-function unsubscribeTopic(topic, next) {
-  next = next || function(error) { return error  };
-  if(mqttClient) {
-    mqttClient.unsubscribe(topic, function() {
-      console.log("MQTT: unsbscribed from " + topic + " channel");
-      next();
-    });
-  }
-  else {
-    throw new Error('Not connected to any MQTT Broker and attempting unsbscriptions...')
-  }
-}
