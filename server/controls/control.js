@@ -105,14 +105,14 @@ var Control = function () {
 
   self.processMessage = function (msg) {
     if( !self.validate(msg) ) {
-      return undefined;
+      return;
     }
 
     // Message is OK so lets try and get the control from the database
     var control = self.getControlByName(name);
 
     if( !control ) {
-      return undefined;
+      return;
     }
 
     // Get control type
@@ -131,7 +131,7 @@ var Control = function () {
 
         if( !self.isWritable(controlConfig, m[1]) ) {
           console.log('Controls: property ' + m[1] + ' not writable. Ignoring message.');
-          return undefined;
+          return;
         }
 
         msg.type = 'propertyValue';
@@ -150,11 +150,11 @@ var Control = function () {
         }
         catch (error) {
           console.log('Control: Error invalid message in topic ' + msg.topic);
-          return undefined;
+          return;
         }
       }
     }
-    return msg;
+
   }
 
 
