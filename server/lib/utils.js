@@ -1,7 +1,7 @@
 /**
  * Created by pedro on 6/3/15.
  */
-va Utils = function() {
+var Utils = function() {
   var self = this;
 
   /**
@@ -52,5 +52,5 @@ va Utils = function() {
 };
 
 
-// Register to Meteor
-Meteor.Utils = new Utils();
+// Register to Master
+master.utils = new Utils();
