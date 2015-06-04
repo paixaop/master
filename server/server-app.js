@@ -2,7 +2,6 @@
  * Created by pedro on 5/18/15.
  */
 
-var mqttClient;
 
 Controls = new Meteor.Collection(serverConfig.controls.collection);
 
