@@ -95,11 +95,20 @@ var MQTT = function() {
       });
       
       // Set topic patterns
-      var patterns = broker.patterns || [ "master/+thing/+name/#path" ];
+      var patterns = broker.patterns || [ "master/+route/+name/#path" ];
       
       // Create regular expression for extracting parameters from topics
       _.forEach(patterns, function(pattern) {
         self.log('Set topic regex to ' + pattern);
+        
+        if( !pattern.match(/\+name/i) ) {
+            throw new Meteor.Error('Missing +name from topic pattern');
+        }
+        
+        if( !pattern.match(/\+route/i) ) {
+            throw new Meteor.Error('Missing +route from topic pattern');
+        }
+        
         self.mqttPatterns[brokerName] = [ ];
         self.mqttPatterns[brokerName].push(mqttregex(pattern).exec);
       });
@@ -131,8 +140,71 @@ var MQTT = function() {
         }
       }
       
-      // TODO: Is valid Message
+      try{ 
+        check(msg, {
+            message: String,
+            topic: String,
+            ts: Number,
+            broker: String,
+            params: ObjectKeysAreAllStrings,
+        });
+      }
+      catch( e ) {
+        console.log('Control: WARNING: Invalid message object. Ignoring message');
+        return;
+      }
       
+      // Check Parameters
+      
+      // Check the route parameter
+      if( msg.params["route"] ) {
+          var valid = false;
+          
+          if( msg.params["route"] > serverConfig.mqtt.security.max_route_length ) {
+              self.log('WARNING: Possible security or configuration problem. Invalid route length. Ignoring message')
+              return;
+          }
+          
+          for(var i = 0; i < serverConfig.mqtt.security.valid_routes.length; i++ ) {
+            if( msg.params["route"].match(serverConfig.mqtt.security.valid_routes[i]) ) {
+              valid = true;
+              break;
+            }
+          }
+          if( !valid ) {
+              self.log('WARNING: Possible security or configuration problem. Invalid route. Ignoring message. Route: ' + msg.params["route"])
+              return;
+          }
+      }
+      else {
+        self.log('WARNING: Possible security or configuration problem. Route parameter was not found in message topic. Ignoring message.')
+        return;
+      }
+      
+      if( msg.params["name"]  ) {
+          if( msg.params["name"] > serverConfig.mqtt.security.max_name_length ) {
+              self.log('WARNING: Possible security or configuration problem. Invalid name length. Ignoring message')
+              return;
+          }
+      }
+      else {
+        self.log('WARNING: Possible security or configuration problem. Name parameters was not found in message topic. Ignoring message.')
+        return;
+      }
+      
+      // Process Message
+      if( msg.params[route] === 'control' ) {
+          if( !Meteor.Control.processMessage(msg) ) {
+            return;
+          }
+      }
+      else {
+        self.log('WARNING: configuration problem, valid route but no code to handle it. Route: ' + msg.params["route"]);
+        return;
+      }
+      
+      // Message passed all the security and validations, was processed so lets save it in the
+      // database for future reference
       Fiber(function() {
         self.collection.insert(msg, function(error) {
           if(error) {
@@ -141,8 +213,6 @@ var MQTT = function() {
         });
       }).run();
       
-      // Process Message
-      //processMessage(msg);
     });
 
     self.mqttBrokers[brokerName].on("error", function(param) {
