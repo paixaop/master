@@ -59,14 +59,17 @@ var Control = function () {
    */
   self.isWritable = function (controlSettings, property) {
 
-    if( !property || !controlSettings.properties || !controlSettings.properties[ property ] || !controlSettings.properties[ property ].acl ) {
+    if( !property ||
+        !controlSettings.properties ||
+        !controlSettings.properties[ property ] ||
+        !controlSettings.properties[ property ].acl ) {
 
       return false;
     }
 
-      if( controlSettings.properties[ property ].acl.match(/w/gi) ) {
-          return true;
-      }
+    if( controlSettings.properties[ property ].acl.match(/w/gi) ) {
+        return true;
+    }
 
     return false;
   };
@@ -102,14 +105,14 @@ var Control = function () {
 
   self.processMessage = function (msg) {
     if( !self.validate(msg) ) {
-      return;
+      return undefined;
     }
 
     // Message is OK so lets try and get the control from the database
     var control = self.getControlByName(name);
 
     if( !control ) {
-      return;
+      return undefined;
     }
 
     // Get control type
@@ -125,6 +128,12 @@ var Control = function () {
       var m = msg.message.match(/([^=\s]+)\s*=\s*(.+)/);
 
       if( m ) {
+
+        if( !self.isWritable(controlConfig, m[1]) ) {
+          console.log('Controls: property ' + m[1] + ' not writable. Ignoring message.');
+          return undefined;
+        }
+
         msg.type = 'propertyValue';
         msg.parse = {};
         msg.parse.property = m[1];
@@ -141,11 +150,11 @@ var Control = function () {
         }
         catch (error) {
           console.log('Control: Error invalid message in topic ' + msg.topic);
-          return;
+          return undefined;
         }
       }
     }
-
+    return msg;
   }
 
 
