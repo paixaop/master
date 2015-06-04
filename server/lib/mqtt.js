@@ -1,9 +1,13 @@
 // List of all connections to MQTT brokers, indexed by broker's name from the settings file
 var Fiber = Npm.require("fibers");
 
+var events = Npm.require("events");
+var util = Npm.require("util");
+
 var MQTT = function() {
   var self = this;
-  
+  events.EventEmitter.call(this);
+
   self.mqttBrokers = { };
   self.mqttPatterns = { };
   
@@ -191,17 +195,8 @@ var MQTT = function() {
         self.log('WARNING: Possible security or configuration problem. Name parameters was not found in message topic. Ignoring message.')
         return;
       }
-      
-      // Process Message
-      if( msg.params[route] === 'control' ) {
-          if( !Meteor.Control.processMessage(msg) ) {
-            return;
-          }
-      }
-      else {
-        self.log('WARNING: configuration problem, valid route but no code to handle it. Route: ' + msg.params["route"]);
-        return;
-      }
+
+      self.emit('message', msg);
       
       // Message passed all the security and validations, was processed so lets save it in the
       // database for future reference
@@ -422,6 +417,8 @@ var MQTT = function() {
     console.log('MQTT: ' + msg.toString());
   };
 };
+
+util.inherits(MQTT, events.EventEmitter);
 
 Meteor.MQTT = new MQTT();
 
