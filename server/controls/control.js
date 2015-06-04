@@ -115,26 +115,39 @@ var Control = function () {
     // Get control type
     var controlConfig = serverConfig.controls.types[control.type];
 
-    _.reduce(controlConfig.basic_commands, function(memo, ))
+    var i = master.utils.matchOne(msg.message, controlConfig.basic_commands)
 
-    if( msg.message.match(controlConfig.basic_commands) ) {
+    if( i !== -1 ) {
       msg.type  = 'basic';
       msg.valid = true;
     }
+    else {
+      var m = msg.message.match(/([^=\s]+)\s*=\s*(.+)/);
 
-    try {
-      var obj   = JSON.parse(msg.message);
-      msg.type  = 'json';
-      msg.parse = obj;
-      msg.valid = true;
+      if( m ) {
+        msg.type = 'propertyValue';
+        msg.parse = {};
+        msg.parse.property = m[1];
+        msg.parse.value = m[2];
+        msg.valid = true;
+      }
+      else {
+        // if not a basic command then try JSON parsing
+        try {
+          var obj   = JSON.parse(msg.message);
+          msg.type  = 'json';
+          msg.parse = obj;
+          msg.valid = true;
+        }
+        catch (error) {
+          console.log('Control: Error invalid message in topic ' + msg.topic);
+          return;
+        }
+      }
     }
-    catch (error) {
-      console.log('Control: Error invalid message in topic ' + msg.topic);
-      return;
-    }
-
 
   }
+
 
 };
 
