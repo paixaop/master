@@ -2,6 +2,9 @@
  * Created by pedro on 5/18/15.
  */
 
+var master = function () {
+
+}
 
 Controls = new Meteor.Collection(serverConfig.controls.collection);
 
