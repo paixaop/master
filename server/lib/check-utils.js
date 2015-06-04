@@ -10,3 +10,13 @@
 isFunction = Match.Where(function (f) {
     return _.isFunction(f);
 });
+
+objectKeysAreAllStrings = Match.Where(function (obj) {
+    var keys = Object.keys(obj);
+    for(var i=0; i < keys.length; i++) {
+        if( typeof obj[key] !== 'string' ) {
+            return false;
+        }
+    }
+    return true;
+});
