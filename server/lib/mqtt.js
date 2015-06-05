@@ -4,7 +4,7 @@ var Fiber = Npm.require("fibers");
 var events = Npm.require("events");
 var util = Npm.require("util");
 
-var MQTT = function() {
+MQTT = function() {
   var self = this;
   events.EventEmitter.call(this);
 
@@ -196,7 +196,7 @@ var MQTT = function() {
         return;
       }
 
-      self.emit('message', msg);
+      self.emit('mqtt-message', msg);
       
       // Message passed all the security and validations, was processed so lets save it in the
       // database for future reference
@@ -419,6 +419,4 @@ var MQTT = function() {
 };
 
 util.inherits(MQTT, events.EventEmitter);
-
-Meteor.MQTT = new MQTT();
 

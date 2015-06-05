@@ -4,9 +4,8 @@
  * Pedro Paixao
  */
 
-var Control = function () {
+Control = function () {
   var self = this;
-
 
   self.types = Object.keys(serverConfig.controls.types);
 
@@ -103,26 +102,48 @@ var Control = function () {
     return true;
   };
 
-  self.processMessage = function (msg) {
+  self.parseMessage = function (msg) {
     if( !self.validate(msg) ) {
-      return;
+      return undefined;
     }
 
     // Message is OK so lets try and get the control from the database
     var control = self.getControlByName(name);
 
     if( !control ) {
-      return;
+      return undefined;
     }
+
+    msg.control = control;
 
     // Get control type
     var controlConfig = serverConfig.controls.types[control.type];
 
-    var i = master.utils.matchOne(msg.message, controlConfig.basic_commands)
+    var i = master.utils.matchOne(msg.message, controlConfig.basic.commands)
 
     if( i !== -1 ) {
       msg.type  = 'basic';
       msg.valid = true;
+
+      var up = {};
+      up[control[controlConfig.basic.set_property]] = controlConfig.basic.command_map[msg.message];
+
+      try {
+        Controls.update(
+          { _id: control._id},
+          up
+        );
+      }
+      catch (error) {
+        console.log(
+          'Controls: could not update property ' + controlConfig.basic.set_property +
+          ' of ' + control.name + ' for basic command: ' + msg.message
+        );
+        console.log('Controls: Error: ' + error.message());
+      }
+
+
+
     }
     else {
       var m = msg.message.match(/([^=\s]+)\s*=\s*(.+)/);
@@ -150,17 +171,23 @@ var Control = function () {
         }
         catch (error) {
           console.log('Control: Error invalid message in topic ' + msg.topic);
-          return;
+          return undefined;
         }
       }
     }
+
+
+
+    return msg;
+  };
+
+  self.processMessage = function(msg) {
+
 
   }
 
 
 };
-
-Meteor.Control = new Control();
 
 /*
  var Switch = function() {

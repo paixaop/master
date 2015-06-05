@@ -1,7 +1,7 @@
 /**
  * Created by pedro on 6/3/15.
  */
-var Utils = function() {
+Utils = function() {
   var self = this;
 
   /**
@@ -50,7 +50,3 @@ var Utils = function() {
   }
 
 };
-
-
-// Register to Master
-master.utils = new Utils();

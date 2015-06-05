@@ -35,7 +35,27 @@ Meteor.startup(function() {
 
   console.log('Starting server');
 
-  Meteor.MQTT.connectMqttAllBrokers();
+  master = new Master();
+  master.register();
+
+  master.MQTT.connectMqttAllBrokers();
+
+  master.MQTT.on('mqtt-message', function(msg) {
+
+    if( !msg) {
+      return;
+    }
+
+    if( msg.params["route"] === 'control' ) {
+      msg = Master.Control.processMessage(msg);
+    }
+    else {
+      throw new Meteor.Error('Error. Unknown handler for route: ' + msg.params[route]);
+    }
+
+
+
+  });
 
   if (Controls.find().count() === 0) {
 
