@@ -3,6 +3,8 @@
  *
  * Pedro Paixao
  */
+var Fiber = Npm.require("fibers");
+var Future = Npm.require('fibers/future');
 
 Control = function () {
   var self = this;
@@ -30,26 +32,51 @@ Control = function () {
       return undefined;
     }
 
-    if( controlName.length > 1 ) {
+    if( controlName.length < 1 ) {
       console.log('Controls: WARNING control name too small. Ignoring');
       return undefined;
     }
 
-    if( !controlName.match(/[^0-9a-z_-]/) ) {
+    if( !controlName.match(/^[0-9a-z_-]+$/i) ) {
       console.log("Controls: bad characters in control name only 0-9, a-z, '_' and '_' allowed");
       return undefined;
     }
 
-    var c = Controls.find({name: controlName});
 
+    var future = new Future();
+    var c = null;
+
+    Fiber(function() {
+      console.log('Controls: searching control database for ' + controlName);
+      c = Controls.findOne({name: controlName});
+      future.wait();
+      console.log('Done searching');
+      if( !c ) {
+        console.log('Control not found: ' + controlName);
+        return undefined;
+      }
+      else if( !c.type ) {
+        console.log('WARNING: Control type unknown, possible control misconfiguration in database.');
+        return undefined;
+      }
+      console.log('Leaving');
+
+      future.return(c);
+    }).run();
+
+
+    return future.wait();
+
+    /*var c = Controls.findOne({name: controlName});
+    console.log('Done searching');
     if( !c ) {
       console.log('Control not found: ' + controlName);
+      return undefined;
     }
     else if( !c.type ) {
       console.log('WARNING: Control type unknown, possible control misconfiguration in database.');
-    }
-
-    return c;
+      return undefined;
+    }*/
   };
 
 
@@ -92,9 +119,12 @@ Control = function () {
 
   self.validate = function (msg) {
 
-    var name = msg.params[ "name" ];
+    if(!msg.params[ "name" ]) {
+      console.log('Controls: control name is mandatory');
+      return undefined;
+    }
 
-    if( name.length > serverConfig.controls.security.max_name_length ) {
+    if( msg.params[ "name" ].length > serverConfig.controls.security.max_name_length ) {
       console.log('Control: WARNING: Possible security or configuration problem. Invalid name length. Ignoring message');
       return false;
     }
@@ -102,15 +132,23 @@ Control = function () {
     return true;
   };
 
-  self.parseMessage = function (msg) {
+  //self.getControlByName = Meteor._wrapAsync(self.getControlByNameAsync);
+
+  self.processMessage = function (msg) {
+    console.log('Controls: attempting to process message');
     if( !self.validate(msg) ) {
       return undefined;
     }
 
+    console.log('Controls: control name is ' + msg.params[ "name" ]);
+
     // Message is OK so lets try and get the control from the database
-    var control = self.getControlByName(name);
+    var control;
+
+    control = self.getControlByName(msg.params[ "name" ]);
 
     if( !control ) {
+      console.log('Controls: No control found in database');
       return undefined;
     }
 
@@ -176,16 +214,8 @@ Control = function () {
       }
     }
 
-
-
     return msg;
   };
-
-  self.processMessage = function(msg) {
-
-
-  }
-
 
 };
 
