@@ -232,6 +232,11 @@ MQTT = function() {
    * @return false is there are problems
    */
   self.isSecure = function(brokerName, msg) {
+    if(!msg) {
+      self.log('Message is undefined. Ignoring');
+      return false;
+    }
+
     if (msg.topic.length > serverConfig.mqtt.security.max_topic_length) {
       self.log('WARNING: Possible hack attempt topic length greater than maximum allowed value. Ignoring message.');
       return false;
@@ -250,7 +255,7 @@ MQTT = function() {
    * @returns undefined if message has any security problems
    */
   self.createMessageDocument = function(brokerName, topic, message) {
-    
+    debugger;
     var ts = new Date();
     var msg = {
       message: message.toString(),
@@ -259,7 +264,7 @@ MQTT = function() {
       broker: brokerName
     };
     
-    if ( !self.isSecure(brokerName, message) ) {
+    if ( !self.isSecure(brokerName, msg) ) {
       return undefined;
     }
     
