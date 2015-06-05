@@ -47,14 +47,12 @@ Meteor.startup(function() {
     }
 
     if( msg.params["route"] === 'control' ) {
-      console.log('Routing to control module');
+      console.log('Routing message to control module');
       msg = master.Control.processMessage(msg);
     }
     else {
       throw new Meteor.Error('Error. Unknown handler for route: ' + msg.params[route]);
     }
-
-
 
   });
 
