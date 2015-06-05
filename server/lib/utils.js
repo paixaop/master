@@ -17,8 +17,8 @@ Utils = function() {
     check(list, [String]);
 
     for(var i = 0; i< list.length; i++) {
-      var re = new RegExp(list[i]);
-      if( re.match(value) ) {
+      var re = new RegExp("^" + list[i] + "$");
+      if( re.test(value) ) {
         return i;
       }
 

@@ -1,7 +1,7 @@
 /**
  * Created by pedro on 6/4/15.
  */
-Master = function() {
+var MasterServer = function() {
   var self = this;
 
   self.register = function() {
@@ -18,3 +18,5 @@ Master = function() {
 
 };
 
+// Global Variables need to start Uppercase! master would not work...
+Master = new MasterServer();

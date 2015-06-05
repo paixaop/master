@@ -16,12 +16,6 @@ Control = function () {
   }
 
   /**
-   * Get a control from the database
-   * @param {String} controlName  The name of the control
-   */
-
-
-  /**
    * Is the property writable
    */
   self.isWritable = function (controlSettings, property) {
@@ -73,6 +67,11 @@ Control = function () {
     return true;
   };
 
+  /**
+   * Get a control from the database
+   * @param {String} controlName  The name of the control
+   */
+
   self.getControlByName = function (controlName) {
     if( !controlName ) {
       console.log('Error. You must pass a control name ');
@@ -119,6 +118,12 @@ Control = function () {
     return(c);
   };
 
+  /**
+   * Process MQTT message
+   * @param msg
+   * @returns {undefined} if message is invalid
+   * @returns {Object} parsed message and control if message is valid
+   */
   self.processMessage = function (msg) {
     console.log('Controls: attempting to process message');
     if( !self.validate(msg) ) {
@@ -143,10 +148,10 @@ Control = function () {
 
       // Get control type
       var controlConfig = serverConfig.controls.types[control.type];
-      debugger;
-      var i = master.Utils.matchOne(msg.message, controlConfig.basic.commands)
+      var i = Master.Utils.matchOne(msg.message, controlConfig.basic.commands)
 
       if( i !== -1 ) {
+        console.log('Controls: ' + msg.message + ' is a basic of the ' + control.type + ' control ' );
         msg.type  = 'basic';
         msg.valid = true;
 
@@ -154,6 +159,7 @@ Control = function () {
         up[control[controlConfig.basic.set_property]] = controlConfig.basic.command_map[msg.message];
 
         try {
+          console.log('Controls: ' + msg.params[ "name" ] + ' set ' + controlConfig.basic.set_property + ' to ' + msg.message);
           Controls.update(
             { _id: control._id},
             up
@@ -166,9 +172,6 @@ Control = function () {
           );
           console.log('Controls: Error: ' + error.message());
         }
-
-
-
       }
       else {
         var m = msg.message.match(/([^=\s]+)\s*=\s*(.+)/);
@@ -203,8 +206,6 @@ Control = function () {
 
       return msg;
     }).run();
-
-
 
   };
 
