@@ -143,21 +143,19 @@ MQTT = function() {
           break;  
         }
       }
-      
-      try{ 
-        check(msg, {
-            message: String,
-            topic: String,
-            ts: Number,
-            broker: String,
-            params: ObjectKeysAreAllStrings,
-        });
-      }
-      catch( e ) {
+
+      if( typeof msg.message !== 'string' ||
+          typeof msg.topic !== 'string' ||
+          typeof msg.ts !== 'number' ||
+          typeof msg.broker !== 'string' ||
+          typeof msg.params !== 'object' ||
+          typeof msg.params.route !== 'string' ||
+          typeof msg.params.name !== 'string'
+      ) {
         console.log('Control: WARNING: Invalid message object. Ignoring message');
         return;
       }
-      
+
       // Check Parameters
       
       // Check the route parameter
