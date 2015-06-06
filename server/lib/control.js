@@ -113,7 +113,7 @@ Control = function () {
       console.log('WARNING: Control type unknown, possible control misconfiguration in database.');
       return undefined;
     }
-    console.log('Controls: Found control with _id: ' + c._id);
+    console.log('Controls: Found control _id: ' + c._id + ' type: ' + c.type);
 
     return(c);
   };
@@ -151,18 +151,40 @@ Control = function () {
       var i = Master.Utils.matchOne(msg.message, controlConfig.basic.commands)
 
       if( i !== -1 ) {
-        console.log('Controls: ' + msg.message + ' is a basic of the ' + control.type + ' control ' );
+        console.log('Controls: ' + msg.message + ' is a basic command of the ' + control.type + ' control ' );
         msg.type  = 'basic';
         msg.valid = true;
 
-        var up = {};
-        up[control[controlConfig.basic.set_property]] = controlConfig.basic.command_map[msg.message];
+        var property = controlConfig.basic.set_property;
+        var value = control[property];
+
+        console.log('Controls: ' + msg.params[ "name" ] + ' current ' + property + ' is ' + value);
+
+        var updateRecord = { };
+
+        updateRecord[property] = controlConfig.basic.command_map[msg.message];
 
         try {
-          console.log('Controls: ' + msg.params[ "name" ] + ' set ' + controlConfig.basic.set_property + ' to ' + msg.message);
+          console.log('Controls: ' + msg.params[ "name" ] + ' set '
+            + controlConfig.basic.set_property
+            + ' to '
+            + msg.message
+            + ' ['
+            + controlConfig.basic.command_map[msg.message]
+            + ']' + JSON.stringify(updateRecord));
+
           Controls.update(
             { _id: control._id},
-            up
+            {
+              $set: updateRecord
+            },
+            function(err, numberOfRecords) {
+              if(err) {
+                console.log('Controls: could not update ' + msg.params[ "name" ]);
+                return;
+              }
+              console.log('Controls: ' + msg.params[ "name" ] + ' updated ' + numberOfRecords);
+            }
           );
         }
         catch (error) {
@@ -210,37 +232,3 @@ Control = function () {
   };
 
 };
-
-/*
- var Switch = function() {
- var self = this;
-
- self.processMessage = function(msg) {
- var controlSettings = { };
- controlSettings = JSON.parse(Assets.getText("control.json"));
-
- var control = getControlByName(controlSettings, msg.params.name)
-
- if (!control) {
- return;
- }
-
- if( !isControlType(control.type, 'switch') ){
- return;
- }
-
- if (control.path !== msg.params.path) {
- console.log('WARNING! Control ' + msg.params.name + ' found but there\'s a path mismatch. Expecting ' +
- control.path + ' got ' + msg.params.name + '. Ignoring path');
- }
-
-
- }
-
- self.isValidMessage = function(msg) {
- // Validate message before processing it
- }
-
- }
-
- */
