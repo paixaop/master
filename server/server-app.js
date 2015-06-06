@@ -2,16 +2,27 @@
  * Created by pedro on 5/18/15.
  */
 
-var master = function () {
-
-}
-
 Controls = new Meteor.Collection(serverConfig.controls.collection);
 
 // Publish the Controls collection to the clients
 Meteor.publish(serverConfig.controls.collection, function(selector, options, publisher) {
-  console.log('Controls subscription requested by client');
+  console.log('Controls subscription requested by client: ' + JSON.stringify(selector));
   return Controls.find(selector, options);
+});
+
+Meteor.methods({
+  subscribe: function(topic) {
+    subscribeTopic(topic);
+  },
+
+  unsubscribe: function(topic) {
+    unsubscribeTopic(topic)
+  },
+
+  publish: function(brokerName, options) {
+    console.log('MQTT: ' + brokerName + ' Publish called');
+    Master.MQTT.publish(brokerName, options);
+  }
 });
 
 
@@ -61,11 +72,21 @@ Meteor.startup(function() {
 
   if (Controls.find().count() === 0) {
 
-    var controls = [{
+    var controls = [
+      {
+        'type': 'label',
+        'name': 'Temperature_Corridor',
+        'path': 'temperature/corridor',
+        'locale': 'en-US',
+        'enable': true,
+        'label': 'Chandelier',
+        'show_label': true
+      },
+      {
         'type': 'switch',
 
         'name': 'chandelier_switch',
-        'path': '/thing/lights/kitchen',
+        'path': 'lights/kitchen',
 
         'locale': 'en-US',
 
@@ -105,7 +126,7 @@ Meteor.startup(function() {
             'actions': [{
                 'broker': 'mybroker',
                 'type': 'mqtt',
-                'topic': '<PATH>/<NAME>',
+                'topic': 'master/control/<NAME>/<PATH>',
                 'message': 'ON',
                 'delay': 50
               }, {
@@ -144,7 +165,7 @@ Meteor.startup(function() {
             'actions': [{
                 'type': 'mqtt',
                 'broker': 'mybroker',
-                'topic': '<PATH>/<NAME>',
+                'topic': 'master/control/<NAME>/<PATH>',
                 'message': 'OFF'
               }, {
                 'type': 'http',
@@ -165,20 +186,10 @@ Meteor.startup(function() {
         }
       }
     ];
-
+    console.log('Empty DB adding some controls...');
     for (var i = 0; i < controls.length; i++)
       Controls.insert(controls[i]);
 
 
-  }
-});
-
-Meteor.methods({
-  subscribe: function(topic) {
-    subscribeTopic(topic);
-  },
-
-  unsubscribe: function(topic) {
-    unsubscribeTopic(topic)
   }
 });

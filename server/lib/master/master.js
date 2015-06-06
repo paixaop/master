@@ -18,5 +18,4 @@ var MasterServer = function() {
 
 };
 
-// Global Variables need to start Uppercase! master would not work...
 Master = new MasterServer();

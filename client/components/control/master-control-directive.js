@@ -1,6 +1,9 @@
 
 var module = angular.module('masterControl', ['angular-meteor']);
-Controls = new Meteor.Collection(clientConfig.controls.collection);
+
+if( typeof Controls === 'undefined') {
+  Controls = new Meteor.Collection(clientConfig.controls.collection);
+}
 
 /**
  * Custom element (tag) directive for control elements
@@ -42,7 +45,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
 
     $scope.$meteorSubscribe(clientConfig.controls.collection,
                             { name: $scope.name }).then(function (handle) {
-        console.log('Client Controls subscription ready');
+        console.log($scope.name + ': Client Controls subscription ready.');
         
         self.subscription = handle;
         
@@ -69,11 +72,11 @@ module.controller('masterControlController', ['$scope', '$meteor',
         if( self.subscription.ready) {
           if( oldDoc.state !== newDoc.state ) {
             if(!self.stateChangeHandled) {
-              console.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              self.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
               $scope.click(newDoc.state);
             }
             else {
-              console.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              self.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
             }
           }
 
@@ -270,7 +273,9 @@ module.controller('masterControlController', ['$scope', '$meteor',
     };
 
     function log(msg) {
-      console.log($scope.name + ':' + msg);
+      if( clientConfig.debug ) {
+        console.log($scope.name + ':' + msg);
+      }
     };
 
     function getStateObj(state){
@@ -291,9 +296,35 @@ module.controller('masterControlController', ['$scope', '$meteor',
         return;
       }
 
+      var stateMap = getStateObj($scope.control.state);
+      var actions = stateMap.actions;
+
       checkAndSetTimer();
       actionAudio();
       actionTTS();
+
+      angular.forEach(actions, function(action) {
+        log('Action: ' + action.type);
+        switch( action.type ) {
+          case 'mqtt' :
+            log('Requesting server to send MQTT message : '+ replaceTags(action.message) + ' on topic ' + replaceTags(action.topic));
+
+            Meteor.call("publish", action.broker, {
+              topic: replaceTags(action.topic),
+              message: replaceTags(action.message)
+            });
+            break;
+          case 'http':
+            break;
+          case 'audio':
+            break;
+          case 'tts':
+            break;
+          default:
+            log('Unknown action type ' + action.type);
+        };
+      });
+
     }
     
     $scope.press = function() {
