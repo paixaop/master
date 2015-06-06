@@ -61,19 +61,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
           init();
         }
     });
-
-    // Listen for MQTT messages
-    MqttMessages.find({}).observe({
-
-      added: function(m) {
-        if( m.topic ===$scope.control.mqtt.in) {
-          log('MQTT message received:', item);
-          $scope.message = m;
-          $scope.processMessage(m.message);
-        }
-      }
-    });
-
+    
     function processMessage(msg) {
       // message format is
       // SET <variable>=<value>

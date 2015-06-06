@@ -1,7 +1,7 @@
 /**
  * Created by pedro on 6/3/15.
  */
-var Utils = function() {
+Utils = function() {
   var self = this;
 
   /**
@@ -17,8 +17,8 @@ var Utils = function() {
     check(list, [String]);
 
     for(var i = 0; i< list.length; i++) {
-      var re = new RegExp(list[i]);
-      if( re.match(value) ) {
+      var re = new RegExp("^" + list[i] + "$");
+      if( re.test(value) ) {
         return i;
       }
 
@@ -50,7 +50,3 @@ var Utils = function() {
   }
 
 };
-
-
-// Register to Master
-master.utils = new Utils();

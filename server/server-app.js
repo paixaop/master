@@ -30,12 +30,32 @@ Controls.allow({
   }
 });
 
+
+
 // Runs right after startup
 Meteor.startup(function() {
 
   console.log('Starting server');
 
-  Meteor.MQTT.connectMqttAllBrokers();
+  Master.register();
+
+  Master.MQTT.connectMqttAllBrokers();
+
+  Master.MQTT.on('mqtt-message', function(msg) {
+
+    if( !msg) {
+      return;
+    }
+
+    if( msg.params["route"] === 'control' ) {
+      console.log('Routing message to control module');
+      msg = Master.Control.processMessage(msg);
+    }
+    else {
+      throw new Meteor.Error('Error. Unknown handler for route: ' + msg.params[route]);
+    }
+
+  });
 
   if (Controls.find().count() === 0) {
 

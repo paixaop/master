@@ -4,7 +4,7 @@ var Fiber = Npm.require("fibers");
 var events = Npm.require("events");
 var util = Npm.require("util");
 
-var MQTT = function() {
+MQTT = function() {
   var self = this;
   events.EventEmitter.call(this);
 
@@ -143,21 +143,19 @@ var MQTT = function() {
           break;  
         }
       }
-      
-      try{ 
-        check(msg, {
-            message: String,
-            topic: String,
-            ts: Number,
-            broker: String,
-            params: ObjectKeysAreAllStrings,
-        });
-      }
-      catch( e ) {
+
+      if( typeof msg.message !== 'string' ||
+          typeof msg.topic !== 'string' ||
+          typeof msg.ts !== 'number' ||
+          typeof msg.broker !== 'string' ||
+          typeof msg.params !== 'object' ||
+          typeof msg.params.route !== 'string' ||
+          typeof msg.params.name !== 'string'
+      ) {
         console.log('Control: WARNING: Invalid message object. Ignoring message');
         return;
       }
-      
+
       // Check Parameters
       
       // Check the route parameter
@@ -196,7 +194,7 @@ var MQTT = function() {
         return;
       }
 
-      self.emit('message', msg);
+      self.emit('mqtt-message', msg);
       
       // Message passed all the security and validations, was processed so lets save it in the
       // database for future reference
@@ -232,6 +230,11 @@ var MQTT = function() {
    * @return false is there are problems
    */
   self.isSecure = function(brokerName, msg) {
+    if(!msg) {
+      self.log('Message is undefined. Ignoring');
+      return false;
+    }
+
     if (msg.topic.length > serverConfig.mqtt.security.max_topic_length) {
       self.log('WARNING: Possible hack attempt topic length greater than maximum allowed value. Ignoring message.');
       return false;
@@ -250,7 +253,7 @@ var MQTT = function() {
    * @returns undefined if message has any security problems
    */
   self.createMessageDocument = function(brokerName, topic, message) {
-    
+    debugger;
     var ts = new Date();
     var msg = {
       message: message.toString(),
@@ -259,7 +262,7 @@ var MQTT = function() {
       broker: brokerName
     };
     
-    if ( !self.isSecure(brokerName, message) ) {
+    if ( !self.isSecure(brokerName, msg) ) {
       return undefined;
     }
     
@@ -419,6 +422,4 @@ var MQTT = function() {
 };
 
 util.inherits(MQTT, events.EventEmitter);
-
-Meteor.MQTT = new MQTT();
 
