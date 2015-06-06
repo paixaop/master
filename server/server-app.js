@@ -35,6 +35,8 @@ Controls.allow({
 // Runs right after startup
 Meteor.startup(function() {
 
+  // TODO report status of the server via MQTT
+
   console.log('Starting server');
 
   Master.register();
