@@ -1,18 +1,11 @@
 <div>
-    <md-card style="width: 175px;">
+    <div flex="10" layout="" layout-align="center center">
+        <span class="md-body-1">R</span>
+    </div>
+    <md-slider flex="" min="0" max="255" ng-model="color.red" aria-label="red" id="red-slider" class="">
+    </md-slider>
 
-        <img hm-tap="tap()"
-             hm-press="press()"
-             hm-doubletap="doubletap()"
-             ng-src="/img/{{ getImage() }}"
-             class="md-card-image" alt="Washed Out">
-
-        <md-card-content  class="md-actions">
-
-            <h2 class="md-title">{{ control.label }}</h2>
-            <md-switch ng-model="control.state" aria-label="{{ name }}"></md-switch>
-
-        </md-card-content>
-
-    </md-card>
+    <div flex="20" layout="" layout-align="center center">
+        <input ng-model="color.red" aria-label="red" aria-controls="red-slider" type="number">
+    </div>
 </div>
