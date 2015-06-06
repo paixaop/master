@@ -374,21 +374,25 @@ MQTT = function() {
   
   /**
    * Send a MQTT message
-   * @param brokerName name of the broker to use. If null broadcast message to all knwon brokers
+   * @param brokerName name of the broker to use. If null broadcast message to all known brokers
    */
   self.publish = function(brokerName, options) {
     
-    check(options, {
-      topic: Match.String,
-      message: [Match.String, Match.Object]
-    });
-    
+    if( !options ||
+        typeof options.topic !== 'string' ||
+        typeof options.message !== 'string'
+    ) {
+      self.log('WARNING: Bad topic or message. Ignoring');
+      return;
+    }
+
     options.broadcast = options.broadcast || false;
         
     if( brokerName ) {
       if( self.mqttBrokers[brokerName] ) {
         // Unicast
-        self.mqttBrokers[brokerName].publish(topic, message);
+        self.log(options.topic + ' ' + options.message);
+        self.mqttBrokers[brokerName].publish(options.topic, options.message);
       }
       else {
         self.log('unknown broker:' + brokerName);
@@ -397,7 +401,8 @@ MQTT = function() {
     else {
       if (options.broadcast) {
         _.forEach(self.mqttBrokers, function(client) {
-          client.publish(topic, message);
+          self.log(options.topic + ' ' + options.message);
+          client.publish(options.topic, options.message);
         });
       }      
     }

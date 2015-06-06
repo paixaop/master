@@ -291,9 +291,35 @@ module.controller('masterControlController', ['$scope', '$meteor',
         return;
       }
 
+      var stateMap = getStateObj($scope.control.state);
+      var actions = stateMap.actions;
+
       checkAndSetTimer();
       actionAudio();
       actionTTS();
+
+      angular.forEach(actions, function(action) {
+        log('Action: ' + action.type);
+        switch( action.type ) {
+          case 'mqtt' :
+            log('Requesting server to send MQTT message : '+ replaceTags(action.message) + ' on topic ' + replaceTags(action.topic));
+
+            Meteor.call("publish", action.broker, {
+              topic: replaceTags(action.topic),
+              message: replaceTags(action.message)
+            });
+            break;
+          case 'http':
+            break;
+          case 'audio':
+            break;
+          case 'tts':
+            break;
+          default:
+            log('Unknown action type ' + action.type);
+        };
+      });
+
     }
     
     $scope.press = function() {
