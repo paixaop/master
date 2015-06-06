@@ -6,7 +6,7 @@ Controls = new Meteor.Collection(serverConfig.controls.collection);
 
 // Publish the Controls collection to the clients
 Meteor.publish(serverConfig.controls.collection, function(selector, options, publisher) {
-  console.log('Controls subscription requested by client');
+  console.log('Controls subscription requested by client: ' + JSON.stringify(selector));
   return Controls.find(selector, options);
 });
 
@@ -72,7 +72,17 @@ Meteor.startup(function() {
 
   if (Controls.find().count() === 0) {
 
-    var controls = [{
+    var controls = [
+      {
+        'type': 'label',
+        'name': 'Temperature_Corridor',
+        'path': 'temperature/corridor',
+        'locale': 'en-US',
+        'enable': true,
+        'label': 'Chandelier',
+        'show_label': true
+      },
+      {
         'type': 'switch',
 
         'name': 'chandelier_switch',
@@ -116,7 +126,7 @@ Meteor.startup(function() {
             'actions': [{
                 'broker': 'mybroker',
                 'type': 'mqtt',
-                'topic': 'master/<PATH>/<NAME>',
+                'topic': 'master/control/<NAME>/<PATH>',
                 'message': 'ON',
                 'delay': 50
               }, {
@@ -155,7 +165,7 @@ Meteor.startup(function() {
             'actions': [{
                 'type': 'mqtt',
                 'broker': 'mybroker',
-                'topic': 'master/<PATH>/<NAME>',
+                'topic': 'master/control/<NAME>/<PATH>',
                 'message': 'OFF'
               }, {
                 'type': 'http',

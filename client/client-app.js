@@ -7,7 +7,8 @@ angular.module(clientConfig.angular.app_name,
    'ngMaterial',
    'ngMdIcons',
    'hmTouchEvents',
-   'masterControl']);
+   'masterControl',
+   'masterLabel']);
 
 /*
 angular.module(Meteor.settings.angular.app_name).controller("PartiesListController",

@@ -1,6 +1,9 @@
 
 var module = angular.module('masterControl', ['angular-meteor']);
-Controls = new Meteor.Collection(clientConfig.controls.collection);
+
+if( typeof Controls === 'undefined') {
+  Controls = new Meteor.Collection(clientConfig.controls.collection);
+}
 
 /**
  * Custom element (tag) directive for control elements
@@ -69,11 +72,11 @@ module.controller('masterControlController', ['$scope', '$meteor',
         if( self.subscription.ready) {
           if( oldDoc.state !== newDoc.state ) {
             if(!self.stateChangeHandled) {
-              console.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              self.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
               $scope.click(newDoc.state);
             }
             else {
-              console.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              self.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
             }
           }
 
@@ -270,7 +273,9 @@ module.controller('masterControlController', ['$scope', '$meteor',
     };
 
     function log(msg) {
-      console.log($scope.name + ':' + msg);
+      if( clientConfig.debug ) {
+        console.log($scope.name + ':' + msg);
+      }
     };
 
     function getStateObj(state){
