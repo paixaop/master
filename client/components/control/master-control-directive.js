@@ -18,11 +18,13 @@ module.directive('masterControl', function() {
 });
 
 /**
- * Control Controller - sorry for the repetition. Controls the master-control tag
+ * Control Controller. Controls the master-control tag - sorry for the repetition
  */
 module.controller('masterControlController', ['$scope', '$meteor',
   function($scope, $meteor) {
     var self = this;
+
+    self.stateChangeHandled = false;
     
     self.stateTimer = 0;
     
@@ -61,6 +63,24 @@ module.controller('masterControlController', ['$scope', '$meteor',
           init();
         }
     });
+
+    Controls.find().observe({
+      changed: function(newDoc, oldDoc) {
+        if( self.subscription.ready) {
+          if( oldDoc.state !== newDoc.state ) {
+            if(!self.stateChangeHandled) {
+              console.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              $scope.click(newDoc.state);
+            }
+            else {
+              console.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+            }
+          }
+
+          self.stateChangeHandled = false;
+        }
+      }
+    })
     
     function processMessage(msg) {
       // message format is
@@ -152,7 +172,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
           }
 
         }
-      })
+      });
     }
 
     /**
@@ -179,7 +199,8 @@ module.controller('masterControlController', ['$scope', '$meteor',
 
     function checkAndSetTimer() {
       // Check for timers
-      var timer = getStateObj().timer;
+      var stateObj = getStateObj();
+      var timer = stateObj.timer;
 
       // If a timer is already on lets clear it first
       if( self.stateTimer ) {
@@ -253,14 +274,27 @@ module.controller('masterControlController', ['$scope', '$meteor',
     };
 
     function getStateObj(state){
-      state = state || $scope.control.state;
+      if(typeof state === 'undefined') {
+        state = $scope.control.state;
+      }
 
       if( angular.isUndefined($scope.control.getRawObject().stateMap[state])) {
         throw new Error($scope.name + ' bad control state:' + state);
       }
 
       return $scope.control.getRawObject().stateMap[state];
-    };    
+    };
+
+    function actions() {
+      if (!self.subscription.ready) {
+        log('click: controls collection subscription not ready');
+        return;
+      }
+
+      checkAndSetTimer();
+      actionAudio();
+      actionTTS();
+    }
     
     $scope.press = function() {
       if (!self.subscription.ready) {
@@ -294,21 +328,26 @@ module.controller('masterControlController', ['$scope', '$meteor',
       }, clientConfig.controls.tap_delay);
     };
     
-    $scope.click = function(state) {
+    $scope.click = function(nextState) {
       if (!self.subscription.ready) {
         log('click: controls collection subscription not ready');
         return;
       }
-      
-      log('Click/Tap. Current state is ' + $scope.control.state);
-      
-      state = state ||$scope.control.state;
-      var stateMap = getStateObj(state);
+
+      // Get current state's map
+      var stateMap = getStateObj($scope.control.state);
+
       if ( angular.isUndefined(stateMap.next_state) ) {
         throw new Error('next_state does not exist in state_map for state ' + state);
       }
       
-      var nextState = stateMap.next_state;
+      log('Click/Tap. Current state is ' + $scope.control.state);
+
+      if( typeof nextState === 'undefined') {
+        nextState = stateMap.next_state;
+      }
+      
+      //var nextState = stateMap.next_state;
 
       // Check is Next State is set
       if( angular.isUndefined(nextState) ) {
@@ -322,17 +361,17 @@ module.controller('masterControlController', ['$scope', '$meteor',
 
       // We're good lets move to next_state
       $scope.control.state = nextState;
+
       log('Click/Tap. State changed to ' + nextState);
+
+      self.stateChangeHandled = true;
       
       // Update the $scope
       $scope.$apply();
       
-      // Local actions
-      checkAndSetTimer();
-      actionAudio();
-      actionTTS();
+      actions();
     };
-    
+
     $scope.getImage = function() {
       if (!self.subscription.ready ) {
         log('getImage: controls collection subscription not ready');
