@@ -1,7 +1,7 @@
 /**
  * Created by pedro on 6/6/15.
  */
-var module = angular.module('masterLabel', ['angular-meteor']);
+var module = angular.module('masterSlider', ['angular-meteor']);
 
 if( typeof Controls === 'undefined') {
   Controls = new Meteor.Collection(clientConfig.controls.collection);
@@ -10,33 +10,22 @@ if( typeof Controls === 'undefined') {
 /**
  * Custom attribute directive for label elements
  */
-module.directive('masterLabel', function() {
+module.directive('masterSlider', function() {
   return {
     scope: {
-      masterLabel: '@'
+      name: '@'
     },
 
-    restrict: 'A',
+    restrict: 'E',
 
     // MUST GIVE FULL DIRECTORY PATH FOR THIS TO WORK!!
-    //templateUrl: 'client/components/control/master-control-template.ng.html',
-    controller: 'masterLabelController'
+    templateUrl: 'client/components/slider/master-slider-template.ng.html',
+    controller: 'masterSliderController'
 
-    /*link: function(scope, element, attributes) {
-
-      scope.control = {};
-      scope.control.label = "Test";
-      console.log(attributes.masterLabel);
-
-      //modelObject is a scope property of the parent/current scope
-      scope.$watch(attributes.masterLabel, function(value){
-        console.log(value);
-      });
-    }*/
   };
 });
 
-module.controller('masterLabelController', ['$scope', '$meteor',
+module.controller('masterSliderController', ['$scope', '$meteor',
   function($scope, $meteor) {
     var self = this;
 
@@ -44,14 +33,12 @@ module.controller('masterLabelController', ['$scope', '$meteor',
       ready: false
     };
 
-    self.findAttr = $scope.masterLabel;
+    self.findAttr = $scope.name;
 
     // If the master-control tag has no "name" attribute generate error
     if( angular.isUndefined(self.findAttr) ) {
       throw new Error('Control is undefined. Please define the master-label attribute');
     }
-    $scope.test = 'Testing';
-
 
     $scope.$meteorSubscribe(clientConfig.controls.collection,
       { name: self.findAttr }).then(function (handle) {

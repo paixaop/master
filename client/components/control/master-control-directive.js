@@ -45,7 +45,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
 
     $scope.$meteorSubscribe(clientConfig.controls.collection,
                             { name: $scope.name }).then(function (handle) {
-        console.log('Client Controls subscription ready');
+        console.log($scope.name + ': Client Controls subscription ready.');
         
         self.subscription = handle;
         
