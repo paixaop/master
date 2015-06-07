@@ -1,5 +1,5 @@
 
-var module = angular.module('masterControl', ['angular-meteor']);
+var module = angular.module('masterSwitch', ['angular-meteor']);
 
 if( typeof Controls === 'undefined') {
   Controls = new Meteor.Collection(clientConfig.controls.collection);
@@ -8,22 +8,22 @@ if( typeof Controls === 'undefined') {
 /**
  * Custom element (tag) directive for control elements
  */
-module.directive('masterControl', function() {
+module.directive('masterSwitch', function() {
     return {
       scope: {
         name: '@'
       },
 
       // MUST GIVE FULL DIRECTORY PATH FOR THIS TO WORK!!
-      templateUrl: 'client/components/control/master-control-template.ng.html',
-      controller: 'masterControlController'
+      templateUrl: 'client/components/switch/master-switch-template.ng.html',
+      controller: 'masterSwitchController'
     };
 });
 
 /**
- * Control Controller. Controls the master-control tag - sorry for the repetition
+ * Switch Controller. Controls the master-switch tag
  */
-module.controller('masterControlController', ['$scope', '$meteor',
+module.controller('masterSwitchController', ['$scope', '$meteor',
   function($scope, $meteor) {
     var self = this;
 
@@ -67,7 +67,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
         }
     });
 
-    Controls.find().observe({
+    Controls.find( { name: $scope.name } ).observe({
       changed: function(newDoc, oldDoc) {
         if( self.subscription.ready) {
           if( oldDoc.state !== newDoc.state ) {
@@ -83,63 +83,7 @@ module.controller('masterControlController', ['$scope', '$meteor',
           self.stateChangeHandled = false;
         }
       }
-    })
-    
-    function processMessage(msg) {
-      // message format is
-      // SET <variable>=<value>
-      // GET <variable>
-
-      var m = msg.match(/^(SET|GET)/);
-      if(!m) {
-        log("Invalid MQTT message command. Ignoring. " + msg);
-        return;
-      }
-
-      m = msg.match(/^(SET)[\s\t]*(enable|state)[\s\t]*=[\s\t]*(.+)$/);
-      if(m) {
-        var method   = m[1];
-        var variable = m[2];
-        var value    = m[3];
-
-        if(variable === 'state') {
-          if( !checkValidState(value) ) {
-            log('Invalid value for state. Must be ' + Object.keys($scope.control.getRawObject().stateMap));
-            return;
-          }
-         $scope.control.state = value;
-        }
-
-        if(variable === 'enable') {
-          if( value !== 'false' && value !== 'true' ) {
-            log('Invalid value for enable. Must be true or false');
-            return;
-          };
-         $scope.control.enable = value;
-        }
-      }
-      else {
-        log("Invalid MQTT message. Ignoring. " + msg);
-      }
-
-      m = msg.match(/^(GET)[\s\t]*(enable|state)$/);
-      if(m) {
-        var method   = m[1];
-        var variable = m[2];
-
-        if(variable === 'state') {
-          log('state = ' + $scope.control.state);
-        }
-
-        if(variable === 'enable') {
-          log('enable = ' + $scope.control.enable);
-        }
-      }
-      else {
-        log("Invalid MQTT message. Ignoring. " + msg);
-      }
-
-    };
+    });
 
     function checkValidState(state) {
       var states = Object.keys($scope.control.getRawObject().stateMap);
