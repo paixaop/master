@@ -1,6 +1,7 @@
 # Master Remote Control
 Remote control for IoT. Simple to create web apps to interface with IoT controllers via MQTT.
 
+
 Controls' states in the remote control are kept in sync with the controller via MQTT messages. Users can change control states and these will be communicated in real time to the IoT controller that supports MQTT.
 
 HTTP and other protocols may be added in the future.
