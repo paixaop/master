@@ -19,7 +19,7 @@ module.directive('masterSlider', function() {
     restrict: 'E',
 
     // MUST GIVE FULL DIRECTORY PATH FOR THIS TO WORK!!
-    templateUrl: 'client/components/slider/master-slider-template.ng.html',
+    templateUrl: 'client/controls/slider/master-slider-template.ng.html',
     controller: 'masterSliderController'
 
   };

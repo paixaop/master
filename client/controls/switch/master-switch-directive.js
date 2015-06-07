@@ -15,7 +15,7 @@ module.directive('masterSwitch', function() {
       },
 
       // MUST GIVE FULL DIRECTORY PATH FOR THIS TO WORK!!
-      templateUrl: 'client/components/switch/master-switch-template.ng.html',
+      templateUrl: 'client/controls/switch/master-switch-template.ng.html',
       controller: 'masterSwitchController'
     };
 });
