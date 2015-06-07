@@ -12,6 +12,10 @@ var Control = function(scope, name) {
   self.name = name;
   self.timer = 0;
 
+  /**
+   * Log a message to the browser's console
+   * @param msg {String} message to log
+   */
   self.log = function(msg) {
     if( clientConfig.debug ) {
       console.log(self.name + ':' + msg);
@@ -106,8 +110,37 @@ var Control = function(scope, name) {
 
   };
 
-  self.actionAudio = function() {
-    var audio = sounds[$scope.control.state];
+  /**
+   * Play an audio file
+   * @param action {Object} Must have action.file with file name
+   */
+  self.actionAudio = function(action) {
+
+    if(action.type !== 'audio') {
+      self.log('actionTTS only handles action.tts actions. Ignoring');
+      return;
+    }
+
+    if( !action.file ) {
+      self.log('no audio file specified. Possible configuration problem. Check your control ['
+        + self.name+']. Ignoring.');
+      return;
+    }
+
+    var volume = 0.5 || action.volume;
+
+    if( !self.sounds[action.file] ) {
+      self.log('First use of ' + action.file + ' creating sound object');
+      self.sounds[action.file] = new Howl({
+        src: [action.file],
+        volume: volume,
+        onend: function() {
+          log('Played Audio ' + action.file);
+        }
+      });
+    }
+
+    var audio = self.sounds[action.file];
 
     if( audio ) {
       audio.play();
@@ -119,6 +152,10 @@ var Control = function(scope, name) {
    * @param str {String} message to speak
    */
   self.actionTTS = function(action) {
+    if(action.type !== 'tts') {
+      self.log('actionTTS only handles action.tts actions. Ignoring');
+      return;
+    }
     if (typeof SpeechSynthesisUtterance === 'undefined' ) {
       log('TTS not supported by this browser');
       return;
@@ -151,6 +188,8 @@ var Control = function(scope, name) {
       self.log('HTTP action only supports GET and POST methods. Ignoring');
       return;
     }
+
+    Meteor.call('httpRequest', action);
 
   };
 
@@ -187,27 +226,28 @@ var Control = function(scope, name) {
       return;
     }
 
-    /*
-    self.setTimer();
-    self.actionAudio();
-    self.actionTTS();
-    */
-
     angular.forEach(actions, function(action) {
       self.log('Action: ' + action.type);
       switch( action.type ) {
         case 'timer':
           break;
+
         case 'mqtt' :
           self.actionMqtt(action);
           break;
+
         case 'http':
+          self.actionHttp(action);
           break;
+
         case 'audio':
+          self.actionAudio(action);
           break;
+
         case 'tts':
           self.actionTTS(action);
           break;
+
         default:
           log('Unknown action type ' + action.type);
       };
