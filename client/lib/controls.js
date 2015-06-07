@@ -18,49 +18,55 @@ var Control = function(scope, name) {
     }
   };
 
-  self.scope.$meteorSubscribe(clientConfig.controls.collection,
-    { name: self.name }).then(function (handle) {
+  /**
+   * Initiate the subscription of the database collection
+   * @param collection {String} name of Meteor Collection
+   */
+  self.subscribeDB = function(collection) {
 
-      self.log(self.name + ': Client Controls subscription ready.');
+    self.scope.$meteorSubscribe(collection, { name: self.name })
+      .then(function (handle) {
 
-      self.subscription = handle;
+        self.log(self.name + ': Client Controls subscription ready.');
 
-      // Get the control from the database and bind it to Angular's scope
-      self.scope.control = self.scope.$meteorObject(Controls, { name: self.name } );
+        self.subscription = handle;
 
-      if (angular.isUndefined(self.scope.control.getRawObject().stateMap) ) {
-        throw new Error('Control statemap is not defined');
-      }
+        // Get the control from the database and bind it to Angular's scope
+        self.scope.control = self.scope.$meteorObject(Controls, { name: self.name } );
 
-      if( angular.isUndefined(self.scope.control) ) {
-        // Control was not found so throw up and error
-        throw new Error('Control ' + self.name + ' was not found in database');
+        if (angular.isUndefined(self.scope.control.getRawObject().stateMap) ) {
+          throw new Error('Control statemap is not defined');
+        }
+
+        if( angular.isUndefined(self.scope.control) ) {
+          // Control was not found so throw up and error
+          throw new Error('Control ' + self.name + ' was not found in database');
+        }
+      });
+
+    // Monitor database changes
+    Controls.find( { name: self.name } ).observe({
+
+      // Any changes?
+      changed: function(newDoc, oldDoc) {
+
+        if( self.subscription.ready) {
+          if( oldDoc.state !== newDoc.state ) {
+            if(!self.stateChangeHandled) {
+              self.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              $scope.click(newDoc.state);
+            }
+            else {
+              self.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+            }
+          }
+          self.stateChangeHandled = false;
+        }
+
       }
     });
+  };
 
-  /**
-   * Monitor database changes
-   */
-  Controls.find( { name: self.name } ).observe({
-
-    // Any changes?
-    changed: function(newDoc, oldDoc) {
-
-      if( self.subscription.ready) {
-        if( oldDoc.state !== newDoc.state ) {
-          if(!self.stateChangeHandled) {
-            self.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
-            $scope.click(newDoc.state);
-          }
-          else {
-            self.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
-          }
-        }
-        self.stateChangeHandled = false;
-      }
-
-    }
-  });
 
   /**
    * replace tags with object properties in a string
@@ -131,9 +137,25 @@ var Control = function(scope, name) {
 
   self.actionHttp = function(action) {
     log('http action');
+    if( !action.url ||
+        typeof action.url !== 'string' ) {
+
+      self.log('action HTTP URL must be configured in the control and it must be a string with the URL of the request. Igrnoring');
+      return;
+
+    }
+
+    action.method = action.method || 'GET';
+
+    if( !action.method.match(/^GET|POST$/i) ) {
+      self.log('HTTP action only supports GET and POST methods. Ignoring');
+      return;
+    }
+
   };
 
   self.actionMqtt = function(action) {
+
     if( !action.topic ||
         !action.message ) {
 
