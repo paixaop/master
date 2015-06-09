@@ -4,6 +4,14 @@
 var Control = function(scope, name) {
   var self = this;
 
+  if( angular.isUndefined(name) ) {
+    throw new Error('Control name is undefined.');
+  }
+
+  if( angular.isUndefined(scope) ) {
+    throw new Error('Control scope undefined.');
+  }
+
   self.subscription = {
     ready: false
   };
@@ -53,20 +61,12 @@ var Control = function(scope, name) {
 
       // Any changes?
       changed: function(newDoc, oldDoc) {
-
-        if( self.subscription.ready) {
-          if( oldDoc.state !== newDoc.state ) {
-            if(!self.stateChangeHandled) {
-              self.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
-              $scope.click(newDoc.state);
-            }
-            else {
-              self.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
-            }
-          }
-          self.stateChangeHandled = false;
+        if (self.subscription.ready) {
+          self.emit('control-db-changed', {
+            old: oldDoc,
+            new: newDoc
+          });
         }
-
       }
     });
   };
@@ -252,7 +252,5 @@ var Control = function(scope, name) {
           log('Unknown action type ' + action.type);
       };
     });
-
   }
-
 }
