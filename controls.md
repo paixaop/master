@@ -115,6 +115,19 @@ MQTT in and out topics can be the same.
     * picture - each action can also change picture of control
   * HSB, RGB - stores color information for colored lights and others
     * for RGB lights have a mode to random colors or cycle colors
+    
+  * Action filters - Actions only run if the filter condition is true
+    * Direction UP, DOWN
+    * Value in range
+    * At specific value, min or max
+    * Tap Events for sliders that are implemented as UP and Down buttons and not
+      a sliding control
+        * Tap Up (TUP) 
+        * Tap Down (TDOWN)
+        * Double Tap Up (DTUP)
+        * Double Tap Down (DTDOWN)
+        * Press and Hold Up (HUP)
+        * Press and Hold Down (HDOWN)
 
 # knob Control
 http://tutorialzine.com/2011/11/pretty-switches-css3-jquery/
