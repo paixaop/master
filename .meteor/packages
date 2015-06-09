@@ -12,3 +12,4 @@ angular:angular-touch
 bojicas:howler2
 mkarliner:mqtt
 mkarliner:mqtt-regex
+logandk:validator
