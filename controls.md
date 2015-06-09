@@ -113,8 +113,8 @@ MQTT in and out topics can be the same.
     * MAX - when max is hit
     * MIN - when min is hit
     * picture - each action can also change picture of control
-  * HSB, RGB - stors color information for colored lights and others
-    * for RGB lights mave a mode to random colors or cycle colors
+  * HSB, RGB - stores color information for colored lights and others
+    * for RGB lights have a mode to random colors or cycle colors
 
 # knob Control
 http://tutorialzine.com/2011/11/pretty-switches-css3-jquery/
