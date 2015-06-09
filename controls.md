@@ -75,6 +75,20 @@ MQTT in and out topics can be the same.
   * label
   * enable
 
+# Control Actions
+Controls can generate actions depending on their state or value. These 
+actions can be:
+
+  * Send MQTT message
+  * Make HTTP request
+  * Change a control property value (this or other control)
+  * Play audio file
+  * Speak using Text to Speech
+  * Change control screen or panel
+  * Timed state changes and property value changes
+  * Change control images
+  * Enable/Disable self, or other controls
+
 # State Machines
 ## Properties
   * state - current state
@@ -115,6 +129,7 @@ MQTT in and out topics can be the same.
     * picture - each action can also change picture of control
   * HSB, RGB - stores color information for colored lights and others
     * for RGB lights have a mode to random colors or cycle colors
+  * change screen or panel
     
   * Action filters - Actions only run if the filter condition is true
     * Direction UP, DOWN
@@ -128,6 +143,30 @@ MQTT in and out topics can be the same.
         * Double Tap Down (DTDOWN)
         * Press and Hold Up (HUP)
         * Press and Hold Down (HDOWN)
+        
+# Creating scenes
+ 
+Users can create scenes by selecting the controls they want and the system will
+store their current values under a new doc on the scenes control.
+
+Actions are tied to:
+ * Scene start - when the user first starts the scene, ie, the controls 
+ involved in the scene are set to their saved values.
+ * Scene end - this action is triggered when a change occurs in any control 
+ that is a member of the scene
+  
+
+{
+    controls: {
+        <name1>: <value1>,
+        <name2>: <value2>
+        ...
+    },
+    actions: {
+        scene: start
+    }
+    
+}
 
 # knob Control
 http://tutorialzine.com/2011/11/pretty-switches-css3-jquery/
