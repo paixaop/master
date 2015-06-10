@@ -80,7 +80,7 @@ Controls can generate actions depending on their state or value. These
 actions can be:
 
   * Send MQTT message
-  * Make HTTP request
+  * Make HTTP request from client or server
   * Change a control property value (this or other control)
   * Play audio file
   * Speak using Text to Speech
@@ -88,6 +88,11 @@ actions can be:
   * Timed state changes and property value changes
   * Change control images
   * Enable/Disable self, or other controls
+  * Send email
+  * Send Telegram message
+  * Tweet message
+  * Lock/Unlock remote
+  * Open app on client
 
 # State Machines
 ## Properties
@@ -143,6 +148,17 @@ actions can be:
         * Double Tap Down (DTDOWN)
         * Press and Hold Up (HUP)
         * Press and Hold Down (HDOWN)
+        
+  { 
+    value: {
+      and: {
+        range: [0, 10],
+        exact: 50
+      }
+      or: {
+        event: tap
+      }
+    }
         
 # Creating scenes
  
@@ -214,3 +230,50 @@ http://tympanus.net/Tutorials/ExpandingOverlayEffect/index2.html
 
 # Slider
 http://tympanus.net/Development/SliderPagination/
+
+
+# Controls
+
+Expose more attributes in the angular directives
+
+<mqtt broker="mybroker" topic="master/_route_/_name_" qos="0"></mqtt>
+
+<action type="mqtt" broker="mybroker" topic="master/po" message="ON" 
+value="ON"/>
+
+<action type="audio" src="on.mp3" value="ON"/>
+
+<action type="http" method="post" src="http://host/on" value="ON">
+POST DATA
+</action>
+
+<action type="tts" voice="alex" volume="1">
+message to speak
+</action>
+
+# Angular route?
+<a href="#screen2" >
+
+<pushbutton>
+  <switch 
+    name="control1"
+    value="on"
+    reset=[500, 0, 0] 
+    label=["on", "off", "held"] 
+    states=[on, off, held] 
+    ontap="" 
+    onHold=""
+    onDblTap=""
+    audio=["on.mp3", "off.mp3", "held.mp3"]
+    img=["on.jpg","off.jpg", "held.jpg"]> 
+    </switch>
+</pushbutton>
+
+<keypad name="keypad1">
+    <pushbutton  v="1">
+</keypad>
+
+<scene name="scene1">
+  <action type="set" control="push1" value="ON">
+  
+</scene>
