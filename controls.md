@@ -1,6 +1,7 @@
 # Master Remote Control
 Remote control for IoT. Simple to create web apps to interface with IoT controllers via MQTT.
 
+
 Controls' states in the remote control are kept in sync with the controller via MQTT messages. Users can change control states and these will be communicated in real time to the IoT controller that supports MQTT.
 
 HTTP and other protocols may be added in the future.
@@ -74,6 +75,25 @@ MQTT in and out topics can be the same.
   * label
   * enable
 
+# Control Actions
+Controls can generate actions depending on their state or value. These 
+actions can be:
+
+  * Send MQTT message
+  * Make HTTP request from client or server
+  * Change a control property value (this or other control)
+  * Play audio file
+  * Speak using Text to Speech
+  * Change control screen or panel
+  * Timed state changes and property value changes
+  * Change control images
+  * Enable/Disable self, or other controls
+  * Send email
+  * Send Telegram message
+  * Tweet message
+  * Lock/Unlock remote
+  * Open app on client
+
 # State Machines
 ## Properties
   * state - current state
@@ -112,8 +132,57 @@ MQTT in and out topics can be the same.
     * MAX - when max is hit
     * MIN - when min is hit
     * picture - each action can also change picture of control
-  * HSB, RGB - stors color information for colored lights and others
-    * for RGB lights mave a mode to random colors or cycle colors
+  * HSB, RGB - stores color information for colored lights and others
+    * for RGB lights have a mode to random colors or cycle colors
+  * change screen or panel
+    
+  * Action filters - Actions only run if the filter condition is true
+    * Direction UP, DOWN
+    * Value in range
+    * At specific value, min or max
+    * Tap Events for sliders that are implemented as UP and Down buttons and not
+      a sliding control
+        * Tap Up (TUP) 
+        * Tap Down (TDOWN)
+        * Double Tap Up (DTUP)
+        * Double Tap Down (DTDOWN)
+        * Press and Hold Up (HUP)
+        * Press and Hold Down (HDOWN)
+        
+  { 
+    value: {
+      and: {
+        range: [0, 10],
+        exact: 50
+      }
+      or: {
+        event: tap
+      }
+    }
+        
+# Creating scenes
+ 
+Users can create scenes by selecting the controls they want and the system will
+store their current values under a new doc on the scenes control.
+
+Actions are tied to:
+ * Scene start - when the user first starts the scene, ie, the controls 
+ involved in the scene are set to their saved values.
+ * Scene end - this action is triggered when a change occurs in any control 
+ that is a member of the scene
+  
+
+{
+    controls: {
+        <name1>: <value1>,
+        <name2>: <value2>
+        ...
+    },
+    actions: {
+        scene: start
+    }
+    
+}
 
 # knob Control
 http://tutorialzine.com/2011/11/pretty-switches-css3-jquery/
@@ -161,3 +230,50 @@ http://tympanus.net/Tutorials/ExpandingOverlayEffect/index2.html
 
 # Slider
 http://tympanus.net/Development/SliderPagination/
+
+
+# Controls
+
+Expose more attributes in the angular directives
+
+<mqtt broker="mybroker" topic="master/_route_/_name_" qos="0"></mqtt>
+
+<action type="mqtt" broker="mybroker" topic="master/po" message="ON" 
+value="ON"/>
+
+<action type="audio" src="on.mp3" value="ON"/>
+
+<action type="http" method="post" src="http://host/on" value="ON">
+POST DATA
+</action>
+
+<action type="tts" voice="alex" volume="1">
+message to speak
+</action>
+
+# Angular route?
+<a href="#screen2" >
+
+<pushbutton>
+  <switch 
+    name="control1"
+    value="on"
+    reset=[500, 0, 0] 
+    label=["on", "off", "held"] 
+    states=[on, off, held] 
+    ontap="" 
+    onHold=""
+    onDblTap=""
+    audio=["on.mp3", "off.mp3", "held.mp3"]
+    img=["on.jpg","off.jpg", "held.jpg"]> 
+    </switch>
+</pushbutton>
+
+<keypad name="keypad1">
+    <pushbutton  v="1">
+</keypad>
+
+<scene name="scene1">
+  <action type="set" control="push1" value="ON">
+  
+</scene>

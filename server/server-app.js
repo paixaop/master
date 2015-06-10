@@ -83,6 +83,61 @@ Meteor.startup(function() {
         'show_label': true
       },
       {
+        'type': 'slider',
+        'name': 'family_room',
+        'path': 'family/lights',
+        'locale': 'en-US',
+        'enable': true,
+        'label': 'Family Room Dimmer',
+        'show_label': true,
+        'value' : 0,
+        'min': 0,
+        'max': 100,
+        'increment': 10,
+        'ramp_up': 2000,
+        'ramp_down': 2000,
+        'current_max': 80,
+        'current_min': 10,
+        'rgb': '#3fe4c5',
+        'actions': [
+          {
+            // Only executes if value is within range [min, max[
+            'value_range': [0, 10],
+            'type': 'mqtt',
+            'broker': 'mybroker',
+            'topic': 'master/control/<NAME>/<PATH>',
+            'message': 'ON',
+            'delay': 50
+          },
+          {
+            // no value_range defined so execute on every change
+            'type': 'mqtt',
+            'broker': 'mybroker',
+            'topic': 'master/control/<NAME>/<PATH>',
+            'message': 'ON'
+          },
+          {
+            // only execute if sliding up
+            'direction': "UP",
+
+          },
+          {
+            // only execute if sliding up
+            'direction': "DOWN",
+
+          },
+          {
+            // only execute on a certain value, accepts number, MAX, and MIN
+            'value': "MAX"
+          },
+          {
+            // execute on TUP, TDOWN, DTUP, DTDOWN, HUP, HDOWN
+            'event':"TUP"
+
+          }
+        ]
+      },
+      {
         'type': 'switch',
 
         'name': 'chandelier_switch',
