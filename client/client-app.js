@@ -7,7 +7,7 @@ angular.module(clientConfig.angular.app_name, [
   'ngMaterial',
   'ngMdIcons',
   'hmTouchEvents',
-  'masterSwitch',
-  'masterLabel'
+  'masterButton',
+    'masterDrag'
 ]);
 

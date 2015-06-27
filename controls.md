@@ -6,6 +6,34 @@ Controls' states in the remote control are kept in sync with the controller via 
 
 HTTP and other protocols may be added in the future.
 
+# Thing DB
+
+A Thing in IOTDB has the following "bands":
+
+  * `istate` - the input state: what we thing the state of the Thing really is
+  * `ostate` - the output state: what we would like the state of the Thing to be
+  * `model` - a JSON-LD semantic description of what the istate and ostate mean
+  * `meta` - metadata for a Thing, for example, it’s name, who made it, is it reachable, etc..
+  
+A thing can have several attributes each of which will have an `istate`, `ostate`, `model` and `meta` bands.
+
+## Control Flow `istate` vs `ostate`
+
+The `istate` or input state represents the state the thing is in at the current time, while `ostate` represents the state we would like the thing to have in a near future.
+
+Why two variables to represent thing state. Thing response time to state changes can very significantly. A light bulb can change state instantaneously while a motor might take several seconds to spin up. Imagine you want to turn on a motor, so you send it the "ON" command, but while the motor is spinning up some other thing is querying the state of the motor.
+If we had only one variable for state then the ON command would have set it's value to ON and all subsequent state queries would be answered with the ON value, which is incorrect while the motor is spinning up.
+
+So to take this into account state changes follow this protocol
+
+  1. We start of with `istate = <state1>` and `ostate = null`
+  1. caller sets `ostate = <new state>`
+  1. `ostate` is monitored internally by thing controller which reacts to the state change request, and starts processing the command to change the thing state
+  1. Controller sets `ostate = null`
+  1. Once thing actually changes to the `<new state>` controller sets `istate = <new state>`
+  
+
+
 # Control data model structure
 
   * A control can have many users
@@ -269,11 +297,40 @@ message to speak
     </switch>
 </pushbutton>
 
-<keypad name="keypad1">
-    <pushbutton  v="1">
+<keypad name="keypad1" required-input-lenght="4" send-individual-keys>
+    <pushbutton  value="1">
+    <pushbutton  value="2">
+    <pushbutton  value="3">
+    ...
+    <pushbutton  value="#">
 </keypad>
 
 <scene name="scene1">
   <action type="set" control="push1" value="ON">
   
 </scene>
+
+G-847235
+
+# Button
+
+## Model
+  * label 
+  * onLabel
+  * offLabel
+  * pressedLabel
+  * onImg
+  * offImg
+  * heldImg
+
+## State
+  * state - On|Off, Open|Close
+
+
+/usr/local/lib/X11/fonts/ubuntu
+/usr/local/share/ghostscript/fonts
+
+# Things: Backend vs HTML attrs
+
+# Backend 
+If the controls are completely defined in the backend databse, ie, all parameters are

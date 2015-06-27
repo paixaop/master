@@ -1,0 +1,280 @@
+.dimmer_panel {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 42;
+}
+.buttons {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 37;
+}
+.button_max {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 36;
+}
+.Max {
+    font-size: 40.75px;
+    font-family: "Avenir";
+    color: rgb(255, 255, 255);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 136px;
+    top: 757.55px;
+    z-index: 35;
+}
+.circular_button {
+    border-width: 1.811px;
+    border-color: rgb(217, 226, 223);
+    border-style: solid;
+    border-radius: 50%;
+    position: absolute;
+    left: 108px;
+    top: 712px;
+    width: 134.378px;
+    height: 134.378px;
+    z-index: 34;
+}
+.button_min {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 32;
+}
+.Min {
+    font-size: 40.75px;
+    font-family: "Avenir";
+    color: rgb(255, 255, 255);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 309px;
+    top: 757.05px;
+    z-index: 31;
+}
+.circular_button {
+    border-width: 1.811px;
+    border-color: rgb(217, 226, 223);
+    border-style: solid;
+    border-radius: 50%;
+    position: absolute;
+    left: 276px;
+    top: 712px;
+    width: 134.378px;
+    height: 134.378px;
+    z-index: 30;
+}
+.button_off {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 28;
+}
+.Off {
+    font-size: 40.75px;
+    font-family: "Avenir";
+    color: rgb(255, 255, 255);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 315px;
+    top: 925.05px;
+    z-index: 27;
+}
+.circular_button {
+    border-width: 1.811px;
+    border-color: rgb(217, 226, 223);
+    border-style: solid;
+    border-radius: 50%;
+    position: absolute;
+    left: 276px;
+    top: 880px;
+    width: 134.378px;
+    height: 134.378px;
+    z-index: 26;
+}
+.button_on {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 24;
+}
+.On {
+    font-size: 40.75px;
+    font-family: "Avenir";
+    color: rgb(255, 255, 255);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 149px;
+    top: 925.05px;
+    z-index: 23;
+}
+.circular_button {
+    border-width: 1.811px;
+    border-color: rgb(217, 226, 223);
+    border-style: solid;
+    border-radius: 50%;
+    position: absolute;
+    left: 108px;
+    top: 880px;
+    width: 134.378px;
+    height: 134.378px;
+    z-index: 22;
+}
+.big_label_group {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 19;
+}
+.big_label_units {
+    font-size: 54.333px;
+    font-family: "Avenir";
+    color: rgb(254, 253, 253);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 385px;
+    top: 348.299px;
+    z-index: 18;
+}
+.big_label {
+    font-size: 271.667px;
+    font-family: "Avenir";
+    color: rgb(254, 253, 253);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 99px;
+    top: 302.5px;
+    z-index: 17;
+}
+.linear_group {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 15;
+}
+.slider {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 14;
+}
+.slider_label {
+    font-size: 40.75px;
+    font-family: "Avenir";
+    color: rgb(243, 129, 24);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 539px;
+    top: 465.05px;
+    z-index: 13;
+}
+.slider_outter_circle {
+    border-width: 13.583px;
+    border-color: rgb(0, 0, 165);
+    border-style: solid;
+    border-radius: 50%;
+    opacity: 0.451;
+    position: absolute;
+    left: 498px;
+    top: 426px;
+    width: 98.834px;
+    height: 98.834px;
+    z-index: 12;
+}
+.slider_inner_circle {
+    border-radius: 50%;
+    background-color: rgb(217, 226, 223);
+    position: absolute;
+    left: 510px;
+    top: 438px;
+    width: 101px;
+    height: 101px;
+    z-index: 11;
+}
+.scale {
+    background-image: url("scale.png");
+    position: absolute;
+    left: 523px;
+    top: 291px;
+    width: 60px;
+    height: 725px;
+    z-index: 9;
+}
+.control_label_group {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 7;
+}
+.control_label {
+    font-size: 50px;
+    font-family: "Avenir";
+    color: rgb(254, 253, 253);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 156px;
+    top: 151.486px;
+    z-index: 6;
+}
+.white_bulb_icon {
+    background-image: url("white-bulb-icon.png");
+    position: absolute;
+    left: 64px;
+    top: 136px;
+    width: 61px;
+    height: 105px;
+    z-index: 5;
+}
+.background {
+    background-image: url("background.png");
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 640px;
+    height: 1136px;
+    z-index: 3;
+}
+
+
+
+.big_label {
+    font-size: 271.667px;
+    font-family: "Avenir";
+    color: rgb(254, 253, 253);
+    line-height: 1.2;
+    text-align: left;
+    position: absolute;
+    left: 99px;
+    top: 302.5px;
+    z-index: 17;
+}

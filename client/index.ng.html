@@ -22,15 +22,17 @@
 
         <md-input-container flex>
             <label>First name</label>
-            <input ng-model="user.firstName">
+            <input ng-model="label">
         </md-input-container>
+
+        <master-button name="Chandelier" label="Kitchen"></master-button>
 
         <md-input-container md-no-float>
             <ng-md-icon icon="phone"></ng-md-icon>
             <input ng-model="user.phone" type="text" placeholder="Phone Number">
         </md-input-container>
 
-        <master-slider name="livingroom_dimmer"></master-slider>
+
 
         <h2 data-master-label="Temperature_Corridor">Temperature is {{ control.label }} - {{ test }}</h2>
 

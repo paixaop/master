@@ -1,4 +1,3 @@
-//.jshintrc
 {
     // JSHint Meteor Configuration File
     // Match the Meteor Style Guide
@@ -110,6 +109,14 @@
       "Handlebars": false,      // https://github.com/meteor/meteor/wiki/Handlebars
       "Package": false,
       "App": false, //mobile-config.js
+
+      // Project Globals
+      "Controls": false,
+      "angular": false,
+      "clientConfig": false,
+      "serverConfig": false,
+      "$meteor": false,         // Meteor AngularJS
+      "$scope": false,          // AngularJS
 
       // Meteor internals
       "DDPServer": false,

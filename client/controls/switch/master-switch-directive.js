@@ -10,7 +10,9 @@
  *   * states [ON, OFF, HELD]
  * @type {module|*}
  */
-var module = angular.module('masterSwitch', [ 'angular-meteor' ]);
+ "use strict";
+
+var module = angular.module('masterSwitch', ['angular-meteor']);
 
 if (typeof Controls === 'undefined') {
   Controls = new Meteor.Collection(clientConfig.controls.collection);
@@ -34,7 +36,7 @@ module.directive('masterSwitch', function () {
 /**
  * Switch Controller. Controls the master-switch tag
  */
-module.controller('masterSwitchController', [ '$scope', '$meteor',
+module.controller('masterSwitchController', ['$scope', '$meteor',
   function ($scope, $meteor) {
     var self = this;
 
@@ -51,7 +53,8 @@ module.controller('masterSwitchController', [ '$scope', '$meteor',
 
     // If the master-control tag has no "name" attribute generate error
     if (angular.isUndefined($scope.name)) {
-      throw new Error('Control name is undefined. Please define the "name" attribute in <master-control>');
+      throw new Error('Control name is undefined. Please define the "name"' +
+                      ' attribute in <master-control>');
     }
 
     $scope.$meteorSubscribe(clientConfig.controls.collection,
@@ -69,10 +72,12 @@ module.controller('masterSwitchController', [ '$scope', '$meteor',
 
         if (angular.isUndefined($scope.control)) {
           // Control was not found so throw up and error
-          throw new Error('Control ' + $scope.name + ' was not found in database');
+          throw new Error('Control ' + $scope.name + 
+                          ' was not found in database');
         }
 
-        if (angular.isDefined($scope.control.getRawObject()) && $scope.control.getRawObject().name === $scope.name) {
+        if (angular.isDefined($scope.control.getRawObject()) &&
+            $scope.control.getRawObject().name === $scope.name) {
           // Object received from DB so we can initialize the controller
           init();
         }
@@ -83,11 +88,15 @@ module.controller('masterSwitchController', [ '$scope', '$meteor',
         if (self.subscription.ready) {
           if (oldDoc.state !== newDoc.state) {
             if (!self.stateChangeHandled) {
-              self.log('Controls: DB Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              self.log('Controls: DB Changed ' +
+                       oldDoc.state + ' -> ' +
+                       newDoc.state);
               $scope.click(newDoc.state);
             }
             else {
-              self.log('Controls: UI Changed ' + oldDoc.state + ' -> ' + newDoc.state);
+              self.log('Controls: UI Changed ' +
+                oldDoc.state + ' -> ' +
+                newDoc.state);
             }
           }
 
@@ -110,16 +119,18 @@ module.controller('masterSwitchController', [ '$scope', '$meteor',
       }
 
       var states = Object.keys($scope.control.getRawObject().stateMap);
-      sounds     = {};
+      self.sounds = {};
 
       angular.forEach(states, function (state) {
         var audio = getStateObj(state).audio;
         if (audio) {
           if (audio.file) {
-            log('file ' + audio.file + ' will be played for state "' + state.toString() + '"');
+            log('file ' + audio.file + ' will be played for state "' + 
+                state.toString() + '"');
+
             var volume      = 0.5 || audio.volume;
-            sounds[ state ] = new Howl({
-              src   : [ audio.file ],
+            self.sounds[ state ] = new Howl({
+              src   : [audio.file],
               volume: volume,
               onend : function () {
                 log('Audio ' + audio.file);
