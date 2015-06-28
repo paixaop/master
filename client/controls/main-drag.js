@@ -15,7 +15,9 @@ module.directive('masterDrag', function() {
                 return;
             }
 
-            scope.slider = {};
+            $(".background").css("background-color", scope.slider.color);
+            $(".slider_inner_circle").css("color", scope.slider.color);
+
             scope.slider.center = el.height()/2;
             console.log('->Value: ' + scope.masterValue);
 
@@ -70,17 +72,33 @@ module.controller('masterDragController', ['$scope', '$meteor',
         var self = this;
 
         $scope.slider = {
-            value: 60
+            value: 60,
+            //color: "#f38118"
+            //color: "#01ba9a"
+            color: "#494949"
         };
 
-        console.log('MasterDrag Controller setup!');
-        console.log($scope.slider);
-    }]);
+        $scope.name = "Kitchen";
 
-module.filter('pad', function () {
-    return function (input) {
-        var n = input;
-        if(!n) return '';
-        return (n < 10) ? '00' + n : (n < 100) ? '0' + n : '' + n;
-    }
-});
+        $scope.moveValueTo = function(newValue) {
+            if( newValue === $scope.slider.value ) {
+                return;
+            }
+
+            var incr = 2;
+            if( newValue < $scope.slider.value ) {
+                incr = -2;
+            }
+            var timer = setInterval(function() {
+                $scope.slider.value += incr;
+                if( ($scope.slider.value >= newValue && incr > 0) ||
+                    ($scope.slider.value <= newValue && incr < 0)) {
+
+                    $scope.slider.value = newValue;
+                    clearInterval(timer);
+                }
+                $scope.$apply();
+            }, 10);
+
+        };
+    }]);
