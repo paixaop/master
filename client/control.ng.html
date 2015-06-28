@@ -1,38 +1,34 @@
 
-    <div layout="row" layout-margin layout-fill layout-padding ng-controller="masterDragController">
-        <!-- Main -->
-        <div flex="70">
-            <img class="control-label-icon" src="images/white-bulb-icon.png" width="50px" height="90px">
-            <div class="control-label">Living Room</div>
+<div layout="row" layout-margin layout-fill layout-padding ng-controller="masterDragController">
+    <!-- Main -->
+    <div flex="70">
+        <img class="control-label-icon" src="images/white-bulb-icon.png" width="50px" height="90px">
+        <div class="control-label">{{ name }}</div>
 
-            <div class="big-value-units">%</div>
-            <div id="value" class="big-value">{{ slider.value }}</div>
+        <div class="big-value-units">%</div>
+        <div id="value" class="big-value">{{ slider.value }}</div>
 
-
-            <div class="newrow margin"></div>
-            <div style="padding-left: 40px;">
-            <div ng-click="slider.value = 100" class="round-button">MAX</div>
-            <div ng-click="slider.value = 0" class="round-button">MIN</div>
-            <div class="round-button">ON</div>
-            <div ng-click="slider.value = 0" class="round-button">OFF</div>
-            </div>
+        <div class="newrow margin"></div>
+        <div style="padding-left: 40px;">
+            <div ng-click="moveValueTo(100)" class="round-button" md-ink-ripple="#330">MAX</div>
+            <div ng-click="moveValueTo(25)" class="round-button">MIN</div>
+            <div ng-click="moveValueTo(75)" class="round-button">ON</div>
+            <div ng-click="moveValueTo(0)" class="round-button">OFF</div>
         </div>
-
-        <!-- Slider -->
-        <div flex="20" height="750" id="sliderContainer">
-            <img id="scale" class="scale" src="/images/scale.png">
-            <div class="slider" id="slider" master-drag="true" master-scale-element="scale" slider="slider">
-                <div class="slider_outter_circle"></div>
-                <div class="slider_inner_circle">{{ slider.value }}</div>
-            </div>
-        </div>
-
     </div>
-    <script type="text/javascript">
-        function blockMove() {
-            event.preventDefault() ;
-        }
 
-        console.log($("#value").position());
+    <!-- Slider -->
+    <div flex="20" height="750" id="sliderContainer">
+        <img id="scale" class="scale" src="/images/scale.png">
+        <div class="slider" id="slider" master-drag="true" master-scale-element="scale" slider="slider">
+            <div class="slider_outter_circle"></div>
+            <div class="slider_inner_circle">{{ slider.value }}</div>
+        </div>
+    </div>
 
-    </script>
+</div>
+<script type="text/javascript">
+    function blockMove() {
+        event.preventDefault() ;
+    }
+</script>
